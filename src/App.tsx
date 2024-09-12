@@ -92,7 +92,7 @@ function App()
 
         if(phaserRef.current)
         {     
-            const scene = phaserRef.current.scene;
+            const scene = phaserRef.current.scene as GameScene;
             
             if (scene)
             {
