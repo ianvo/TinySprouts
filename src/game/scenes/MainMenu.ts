@@ -26,6 +26,10 @@ export class MainMenu extends Scene
             align: 'center'
         }).setOrigin(0.5).setDepth(100);
 
+        this.title.setInteractive().on('pointerup', (pointer: Phaser.Input.Pointer, localX: number, localY: number) => {
+            this.changeScene();
+        });
+
         EventBus.emit('current-scene-ready', this);
     }
     
@@ -37,7 +41,7 @@ export class MainMenu extends Scene
             this.logoTween = null;
         }
 
-        this.scene.start('Game');
+        this.scene.start('AdditionGameScene');
     }
 
     moveLogo (vueCallback: ({ x, y }: { x: number, y: number }) => void)

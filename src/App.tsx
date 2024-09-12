@@ -1,11 +1,13 @@
 import { useRef, useState } from 'react';
 import { IRefPhaserGame, PhaserGame } from './game/PhaserGame';
 import { MainMenu } from './game/scenes/MainMenu';
+import { MiniGameScene } from './game/scenes/minigames/MiniGameScene';
 
 function App()
 {
     // The sprite can only be moved in the MainMenu Scene
     const [canMoveSprite, setCanMoveSprite] = useState(true);
+    const [gameTitle, setGameTitle] = useState("");
 
     //  References to the PhaserGame component (game and scene are exposed)
     const phaserRef = useRef<IRefPhaserGame | null>(null);
@@ -77,13 +79,23 @@ function App()
     const currentScene = (scene: Phaser.Scene) => {
 
         setCanMoveSprite(scene.scene.key !== 'MainMenu');
+        if(scene.scene.scene instanceof MiniGameScene) {
+            setGameTitle(scene.scene.scene.title);
+        }
+        else {
+            setGameTitle("");
+        }
         
     }
 
     return (
         <div id="app">
-            <PhaserGame ref={phaserRef} currentActiveScene={currentScene} />
-            <div>
+
+            <div id="contents">
+                <div id="title">{gameTitle}</div>
+                <PhaserGame ref={phaserRef} currentActiveScene={currentScene} />
+            </div>
+            <div id="controls">
                 <div>
                     <button className="button" onClick={changeScene}>Change Scene</button>
                 </div>
