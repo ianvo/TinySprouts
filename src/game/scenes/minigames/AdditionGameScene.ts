@@ -1,9 +1,9 @@
 import { EventBus } from '../../EventBus';
+import { GameScene } from '../GameScene';
 import {Howl} from 'howler';
-import { MiniGameScene } from './MiniGameScene';
 
 
-export class AdditionGameScene extends MiniGameScene
+export class AdditionGameScene extends GameScene
 {
     camera: Phaser.Cameras.Scene2D.Camera;
     background: Phaser.GameObjects.Image;
@@ -13,8 +13,6 @@ export class AdditionGameScene extends MiniGameScene
     solution: number;
     proposedAnswer: string;
     answering: boolean;
-    bgm: Map<string, Howl>;
-    sfx: Map<string, Howl>;
 
     constructor ()
     {
@@ -26,34 +24,30 @@ export class AdditionGameScene extends MiniGameScene
         this.camera = this.cameras.main;
         this.camera.centerOn(0,0)
         this.camera.setBackgroundColor(0x000000);
-        this.bgm = new Map<string, Howl>([
-            ["gameplay", new Howl({
-                src: ['assets/bgm/Theme_1_NewDayEnergy_Loop.ogg'],
-                autoplay: true,
-                loop: true,
-                volume: .3
-            })],
-            ["victory", new Howl({
-                src: ['assets/bgm/LOOP_Feel-Good-Victory.ogg'],
-                autoplay: false,
-                loop: true,
-                volume: .5
-            })]
-        ]);
-        this.sfx = new Map<string, Howl>([
-            ["correct", new Howl({
-                src: ['assets/sfx/correct.ogg'],
-                autoplay: false,
-                loop: false,
-                volume: .5
-            })],
-            ["incorrect", new Howl({
-                src: ['assets/sfx/incorrect.ogg'],
-                autoplay: false,
-                loop: false,
-                volume: .5
-            })]
-        ]);
+        this.bgm.set("gameplay", new Howl({
+            src: ['assets/bgm/Sweet Treats.ogg'],
+            autoplay: true,
+            loop: true,
+            volume: .3
+        }));
+        this.bgm.set("victory", new Howl({
+            src: ['assets/bgm/LOOP_Feel-Good-Victory.ogg'],
+            autoplay: false,
+            loop: true,
+            volume: .5
+        }));
+        this.sfx.set("correct", new Howl({
+            src: ['assets/sfx/correct.ogg'],
+            autoplay: false,
+            loop: false,
+            volume: .5
+        }));
+        this.sfx.set("incorrect", new Howl({
+            src: ['assets/sfx/incorrect.ogg'],
+            autoplay: false,
+            loop: false,
+            volume: .5
+        }));
 
 
         this.background = this.add.image(0, 0, 'background');
@@ -133,6 +127,5 @@ export class AdditionGameScene extends MiniGameScene
 
     changeScene ()
     {
-        this.scene.start('GameOver');
     }
 }

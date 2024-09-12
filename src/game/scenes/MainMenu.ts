@@ -1,17 +1,18 @@
 import { GameObjects, Scene } from 'phaser';
 
 import { EventBus } from '../EventBus';
+import { GameScene } from './GameScene';
 
-export class MainMenu extends Scene
+export class MainMenu extends GameScene
 {
     background: GameObjects.Image;
     logo: GameObjects.Image;
-    title: GameObjects.Text;
+    text: GameObjects.Text;
     logoTween: Phaser.Tweens.Tween | null;
 
     constructor ()
     {
-        super('MainMenu');
+        super('MainMenu', "Main Menu");
     }
 
     create ()
@@ -20,13 +21,13 @@ export class MainMenu extends Scene
 
         this.logo = this.add.image(512, 300, 'logo').setDepth(100);
 
-        this.title = this.add.text(512, 460, 'Main Menu', {
+        this.text = this.add.text(512, 460, 'Main Menu', {
             fontFamily: 'Arial Black', fontSize: 38, color: '#ffffff',
             stroke: '#000000', strokeThickness: 8,
             align: 'center'
         }).setOrigin(0.5).setDepth(100);
 
-        this.title.setInteractive().on('pointerup', (pointer: Phaser.Input.Pointer, localX: number, localY: number) => {
+        this.text.setInteractive().on('pointerup', (pointer: Phaser.Input.Pointer, localX: number, localY: number) => {
             this.changeScene();
         });
 

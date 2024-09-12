@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { IRefPhaserGame, PhaserGame } from './game/PhaserGame';
 import { MainMenu } from './game/scenes/MainMenu';
-import { MiniGameScene } from './game/scenes/minigames/MiniGameScene';
+import { GameScene } from './game/scenes/GameScene';
 
 function App()
 {
@@ -79,13 +79,26 @@ function App()
     const currentScene = (scene: Phaser.Scene) => {
 
         setCanMoveSprite(scene.scene.key !== 'MainMenu');
-        if(scene.scene.scene instanceof MiniGameScene) {
+        if(scene.scene.scene instanceof GameScene) {
             setGameTitle(scene.scene.scene.title);
         }
         else {
             setGameTitle("");
         }
         
+    }
+
+    const launchScene = (key: string) => {
+
+        if(phaserRef.current)
+        {     
+            const scene = phaserRef.current.scene;
+            
+            if (scene)
+            {
+                scene.startScene(key);
+            }
+        }
     }
 
     return (
@@ -97,16 +110,10 @@ function App()
             </div>
             <div id="controls">
                 <div>
-                    <button className="button" onClick={changeScene}>Change Scene</button>
+                    <button className="button" onClick={()=>{launchScene("AdditionGameScene")}}>Addition Game</button>
                 </div>
                 <div>
-                    <button disabled={canMoveSprite} className="button" onClick={moveSprite}>Toggle Movement</button>
-                </div>
-                <div className="spritePosition">Sprite Position:
-                    <pre>{`{\n  x: ${spritePosition.x}\n  y: ${spritePosition.y}\n}`}</pre>
-                </div>
-                <div>
-                    <button className="button" onClick={addSprite}>Add New Sprite</button>
+                    <button className="button" onClick={()=>{launchScene("CountingGameScene")}}>Counting Game</button>
                 </div>
             </div>
         </div>
