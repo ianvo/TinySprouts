@@ -110,10 +110,10 @@ function App()
             </div>
             <div id="controls">
                 <div>
-                    <button className="button" onClick={()=>{launchScene("AdditionGameScene")}}>Addition Game</button>
+                    <div className="game_button" onClick={()=>{launchScene("AdditionGameScene")}}>Addition Game</div>
                 </div>
                 <div>
-                    <button className="button" onClick={()=>{launchScene("CountingGameScene")}}>Counting Game</button>
+                    <div className="game_button" onClick={()=>{launchScene("CountingGameScene")}}>Counting Game</div>
                 </div>
             </div>
         </div>
