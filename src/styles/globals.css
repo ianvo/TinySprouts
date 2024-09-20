@@ -32,6 +32,7 @@ body {
 
 #contents {
     width: 0;
+    height: 100%;
     min-width: 1050px;
     margin-left: 20px;
     margin-right: 20px;
@@ -43,6 +44,9 @@ body {
 #title {
     text-align: center;
     height: 100px;
+    line-height: 100px;
+    font-size: 32px;
+    color: white;
 }
 
 #game-container {
@@ -55,9 +59,7 @@ body {
 
 #controls {
     width: 350px;
-    background: #E0B3FC;
-    border-radius: 10px;
-    box-shadow: inset 0px 0px 10px 0px rgba(0, 0, 0, .5);
+    padding-right: 20px;
 }
 
 .spritePosition {
@@ -69,9 +71,10 @@ body {
     width: 140px;
     margin: 10px;
     padding: 10px;
-    background-color: #000000;
+    background: #E0B3FC;
+    border: 10px solid rgba(255, 255, 255, 0.87);
+    box-shadow: inset 0px 0px 10px 0px rgba(0, 0, 0, .5);
     color: rgba(255, 255, 255, 0.87);
-    border: 1px solid rgba(255, 255, 255, 0.87);
     cursor: pointer;
     transition: all 0.3s;
 
