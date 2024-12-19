@@ -39,6 +39,13 @@ export class Preloader extends Scene
 
         this.load.spritesheet("eggs", "sprites/eggs.png", {frameWidth: 24, frameHeight: 24});      
 
+        this.load.image('card_back', "sprites/cards/cardBack_blue5.png");
+        for(var i = 2; i <= 10; i++) {
+            this.load.image(`card_clubs_${i}`, `sprites/cards/cardClubs${i}.png`);
+            this.load.image(`card_diamonds_${i}`, `sprites/cards/cardDiamonds${i}.png`);
+            this.load.image(`card_hearts_${i}`, `sprites/cards/cardHearts${i}.png`);
+            this.load.image(`card_spades_${i}`, `sprites/cards/cardSpades${i}.png`);
+        }
 
     }
 

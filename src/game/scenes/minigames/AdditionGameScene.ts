@@ -106,6 +106,11 @@ export class AdditionGameScene extends GameScene
     }
 
     generateProblem() {
+        /*
+            Level 1: sums up to 10
+            Level 2: sums up to 20
+            Level 3: 
+        */
         this.proposedAnswer = "";
         let a = Math.floor(Math.random()*10)+1;
         let b = Math.floor(Math.random()*10)+1;

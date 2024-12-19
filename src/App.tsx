@@ -118,6 +118,9 @@ function App()
                 <div>
                     <div className="game_button" onClick={()=>{launchScene("PatternGameScene")}}>Pattern Game</div>
                 </div>
+                <div>
+                    <div className="game_button" onClick={()=>{launchScene("MemoryGameScene")}}>Memory Game</div>
+                </div>
             </div>
         </div>
     )

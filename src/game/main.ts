@@ -5,6 +5,7 @@ import { Preloader } from './scenes/Preloader';
 import { AdditionGameScene } from './scenes/minigames/AdditionGameScene';
 import { CountingGameScene } from './scenes/minigames/CountingGameScene';
 import { PatternGameScene } from './scenes/minigames/PatternGameScene';
+import { MemoryGameScene } from './scenes/minigames/MemoryGameScene';
 
 //  Find out more information about the Game Config at:
 //  https://newdocs.phaser.io/docs/3.70.0/Phaser.Types.Core.GameConfig
@@ -27,7 +28,8 @@ const config: Phaser.Types.Core.GameConfig = {
         MainMenu,
         AdditionGameScene,
         CountingGameScene,
-        PatternGameScene
+        PatternGameScene,
+        MemoryGameScene
     ]
 };
 
