@@ -100,7 +100,7 @@ class Card {
                     });
                 }
             });
-        }, 2000);
+        }, 1000);
     }
 
     destroy() {
@@ -162,8 +162,7 @@ export class MemoryGameScene extends GameScene
         }));
 
 
-        //this.background = this.add.image(0, 0, 'background');
-        //this.background.setAlpha(0.5);
+        this.background = this.add.image(-90, 100, 'cafeteria');
 
         this.problemText = this.add.text(0, 0, '', {
             fontFamily: 'Arial Black', fontSize: 38, color: '#ffffff',
