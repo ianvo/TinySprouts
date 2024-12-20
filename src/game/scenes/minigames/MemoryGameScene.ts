@@ -164,8 +164,8 @@ export class MemoryGameScene extends GameScene
 
         this.background = this.add.image(-90, 100, 'cafeteria');
 
-        this.problemText = this.add.text(0, 0, '', {
-            fontFamily: 'Arial Black', fontSize: 38, color: '#ffffff',
+        this.problemText = this.add.text(0, -300, 'Find pairs that add up to 10!', {
+            fontFamily: 'Arial Black', fontSize: 28, color: '#ffffff',
             stroke: '#000000', strokeThickness: 8,
             align: 'center'
         }).setOrigin(0.5).setDepth(100);
@@ -207,12 +207,11 @@ export class MemoryGameScene extends GameScene
 
         let max = 6;
         for(let i = 0; i < numbers.length; i++) {
-            let x = i % max;
+            let x = i % max - (max/2 - .5);
             let y = Math.floor(i / max);
-            let card = new Card(this, numbers[i].value, numbers[i].suit, x*(Card.WIDTH+10), y*(Card.HEIGHT+10));
+            let card = new Card(this, numbers[i].value, numbers[i].suit, x*(Card.WIDTH+10), y*(Card.HEIGHT+10)-150);
         }
 
-        this.camera.centerOn(Card.WIDTH*max/2,Card.HEIGHT*(Math.floor(numbers.length/max))/2)
     }
 
     select (card: Card) {
