@@ -11,14 +11,14 @@ class Card {
     value: number;
     x: number;
     y: number;
-    scene: Scene;
+    scene: MemoryGameScene;
     valueText: Phaser.GameObjects.Text;
     front: Phaser.GameObjects.Sprite;
     back: Phaser.GameObjects.Sprite;
     width: number;
     height: number;
     
-    constructor(scene: Scene, value: number, suit:String, x: number, y: number) {
+    constructor(scene: MemoryGameScene, value: number, suit:String, x: number, y: number) {
         this.value = value;
         this.x = x;
         this.y = y;
