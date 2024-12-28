@@ -28,7 +28,8 @@ export class AdditionGameScene extends GameScene
             src: ['assets/bgm/Theme_5_PartyTime_Loop.ogg'],
             autoplay: true,
             loop: true,
-            volume: .3
+            volume: .3,
+            html5: true
         }));
         this.bgm.set("victory", new Howl({
             src: ['assets/bgm/LOOP_Feel-Good-Victory.ogg'],

@@ -113,7 +113,7 @@ export class PatternGameScene extends GameScene
     generateProblem() {
         this.proposedAnswer = "";
         let diff = Math.floor(Math.random() * 4);
-        let currentVal = Math.floor(Math.random() * 8);
+        let currentVal = Math.floor(Math.random() * 7)+1;
         this.problem = "";
         for (var i = 0; i < 4; i++) {
             this.problem += `${currentVal}${i<3?"  ":""}`;

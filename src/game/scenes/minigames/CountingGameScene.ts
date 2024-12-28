@@ -22,7 +22,7 @@ export class CountingGameScene extends GameScene
         this.camera.centerOn(0,0)
         this.camera.setBackgroundColor(0x000000);
         this.bgm.set("gameplay", new Howl({
-            src: ['assets/bgm/Song_Candy_Shop_Loop.ogg'],
+            src: ['assets/bgm/High End Party.ogg'],
             autoplay: true,
             loop: true,
             volume: .3
