@@ -1,140 +1,319 @@
 import { EventBus } from '../../EventBus';
 import { GameScene } from '../GameScene';
-import {Howl} from 'howler';
+import { Howl } from 'howler';
 
+type ChickenMarker = {
+    sprite: Phaser.GameObjects.Sprite;
+    badge: Phaser.GameObjects.Text;
+};
 
 export class CountingGameScene extends GameScene
 {
-    camera: Phaser.Cameras.Scene2D.Camera;
-    background: Phaser.GameObjects.Image;
-    problemText: Phaser.GameObjects.Text;
-    eggs: Phaser.GameObjects.Image[];
+    camera!: Phaser.Cameras.Scene2D.Camera;
+    background!: Phaser.GameObjects.Image;
+    promptText!: Phaser.GameObjects.Text;
+    helperText!: Phaser.GameObjects.Text;
+    countText!: Phaser.GameObjects.Text;
+    frameBase!: Phaser.GameObjects.Rectangle;
+    frameSlots: Phaser.GameObjects.Rectangle[];
+    chickens: ChickenMarker[];
     solution: number;
+    answerButtons: Phaser.GameObjects.Container[];
+    tappedChickens: Set<number>;
 
     constructor ()
     {
-        super('CountingGameScene', "Counting Practice");
+        super('CountingGameScene', 'Counting Coop');
+        this.frameSlots = [];
+        this.chickens = [];
+        this.solution = 0;
+        this.answerButtons = [];
+        this.tappedChickens = new Set<number>();
     }
 
     create ()
     {
         this.camera = this.cameras.main;
-        this.camera.centerOn(0,0)
-        this.camera.setBackgroundColor(0x000000);
-        this.bgm.set("gameplay", new Howl({
+        this.useFixedStageCamera(this.camera);
+        this.camera.setBackgroundColor('rgba(0,0,0,0)');
+        this.bgm.set('gameplay', new Howl({
             src: ['assets/bgm/High End Party.ogg'],
             autoplay: true,
             loop: true,
-            volume: .3
+            volume: 0.3
         }));
-        this.bgm.set("victory", new Howl({
+        this.bgm.set('victory', new Howl({
             src: ['assets/bgm/LOOP_Feel-Good-Victory.ogg'],
             autoplay: false,
             loop: true,
-            volume: .5
+            volume: 0.5
         }));
-        this.sfx.set("correct", new Howl({
+        this.sfx.set('correct', new Howl({
             src: ['assets/sfx/correct.ogg'],
             autoplay: false,
             loop: false,
-            volume: .5
+            volume: 0.5
         }));
-        this.sfx.set("incorrect", new Howl({
+        this.sfx.set('incorrect', new Howl({
             src: ['assets/sfx/GAME_MENU_SCORE_SFX000603.ogg'],
             autoplay: false,
             loop: false,
-            volume: .5
+            volume: 0.5
         }));
 
-
-        this.background = this.add.image(0,0, 'restaurant');
-        this.background.setOrigin(.5, .5);
-        this.background.scale = .75;
-
-
-        this.problemText = this.add.text(0, -150, 'How many chickens do you see?', {
-            fontFamily: 'Arial Black', fontSize: 38, color: '#ffffff',
-            stroke: '#000000', strokeThickness: 8,
+        this.promptText = this.addGameText(0, -290, 'How many chickens do you see?', {
+            fontFamily: GameScene.FONT_FAMILY,
+            fontSize: 50,
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 8,
             align: 'center'
         }).setOrigin(0.5).setDepth(100);
 
-        this.eggs = new Array();
-        let scale = .75;
-        let spacing = 175;
-        let xOffset = -2.5 * spacing * scale;
-        let yOffset = -.5 * spacing * scale;
-        for(let i = 0; i < 10; i++) {
-            this.eggs.push(this.add.sprite((i%5)*spacing*scale + xOffset, Math.floor(i/5)*spacing*scale + yOffset, "chicken").setScale(scale,scale).setOrigin(0, 0));
-        }
+        this.helperText = this.addGameText(0, -240, '', {
+            fontFamily: GameScene.FONT_FAMILY,
+            fontSize: 24,
+            color: '#fff5dc',
+            stroke: '#304225',
+            strokeThickness: 6,
+            align: 'center',
+            wordWrap: { width: 820 }
+        }).setOrigin(0.5).setDepth(100);
 
+        this.countText = this.addGameText(0, 92, '', {
+            fontFamily: GameScene.FONT_FAMILY,
+            fontSize: 38,
+            color: '#fff5dc',
+            stroke: '#304225',
+            strokeThickness: 7,
+            align: 'center'
+        }).setOrigin(0.5).setDepth(100);
 
-        for(var i = 0; i < 10; i++) {
-            this.addButton(i+1, (i%10 - 4.5) * 90, 250+Math.floor(i/10) * 90);
-        }
+        this.frameBase = this.add.rectangle(0, -26, 560, 250, 0xffefc6)
+            .setStrokeStyle(8, 0x8c5728)
+            .setDepth(5);
 
-        //this.input?.keyboard?.on('keyup', this.handleKeyboardInput, this);
+        this.helperText.setVisible(false);
+
+        this.buildAnswerButtons();
         this.generateProblem();
+        this.watchDifficultyChanges(() => {
+            this.buildAnswerButtons();
+            this.generateProblem();
+        });
         EventBus.emit('current-scene-ready', this);
     }
 
-    addButton(value: number, x: number, y: number) {
-        let button = this.add.sprite(x, y, "button");
-        button.setScale(1.5);
-        button.setOrigin(.5, .5);
-        let text = this.add.text(x, y, `${value}`, {
-            fontFamily: 'Arial Black', fontSize: 32, color: '#ffffff',
-            stroke: '#000000', strokeThickness: 8,
-            align: 'center'
-        });
-        text.setOrigin(.5, .5);
+    buildAnswerButtons () {
+        this.answerButtons.forEach((button) => button.destroy());
+        this.answerButtons = [];
 
-        button.setInteractive();
-        button.on("pointerup", () => {
+        const maxValue = this.getMaxAnswerValue();
+        const columns = maxValue <= 5 ? 5 : 5;
+        const spacing = 132;
+        const startX = -((columns - 1) * spacing) / 2;
+        const startY = GameScene.ANSWER_GRID_Y;
+        const rowSpacing = GameScene.ANSWER_ROW_SPACING;
+
+        for (let index = 0; index < maxValue; index++) {
+            const value = index + 1;
+            const x = startX + (index % columns) * spacing;
+            const y = startY + Math.floor(index / columns) * rowSpacing;
+            this.addButton(value, x, y);
+        }
+    }
+
+    getMaxAnswerValue () {
+        const difficultyLevel = this.getDifficultyLevel();
+        return difficultyLevel === 1 ? 5 : 10;
+    }
+
+    addButton (value: number, x: number, y: number) {
+        const button = this.add.container(x, y);
+        const sprite = this.add.sprite(0, 0, 'button');
+        sprite.setScale(1.85);
+        sprite.setOrigin(0.5, 0.5);
+        sprite.setInteractive({ cursor: 'pointer' });
+        const text = this.addGameText(0, 0, `${value}`, {
+            fontFamily: GameScene.FONT_FAMILY,
+            fontSize: 38,
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 8,
+            align: 'center'
+        }).setOrigin(0.5, 0.5);
+        text.disableInteractive();
+        button.add([sprite, text]);
+
+        sprite.on('pointerup', () => {
             this.submitAnswer(value);
         });
 
-        button.on("pointerover", () => {
-            button.setScale(1.6);
+        sprite.on('pointerover', () => {
+            button.setScale(1.06);
         });
 
-        button.on("pointerout", () => {
-            button.setScale(1.5);
+        sprite.on('pointerout', () => {
+            button.setScale(1);
         });
+
+        this.answerButtons.push(button);
     }
 
-    handleKeyboardInput(e: KeyboardEvent) {
-        let proposedAnswer = parseInt(e.key);
-        if(!isNaN(proposedAnswer)) {
-            this.submitAnswer(proposedAnswer);
-        }
-    }
-
-    submitAnswer(proposedAnswer: number) {
-        if(proposedAnswer === this.solution) {
-            this.sfx.get("correct")?.play();
-            setTimeout(() => {
+    submitAnswer (proposedAnswer: number) {
+        if (proposedAnswer === this.solution) {
+            this.sfx.get('correct')?.play();
+            this.countText.setText('That\'s right!');
+            this.time.delayedCall(900, () => {
                 this.generateProblem();
-            }, 500);
+            });
+            return;
         }
-        else {
-            this.sfx.get("incorrect")?.play();
-            this.cameras.main.shake(200, 0.002);
-        }
+
+        this.sfx.get('incorrect')?.play();
+        this.countText.setText('Try again.');
+        this.cameras.main.shake(200, 0.002);
     }
 
-    generateProblem() {
+    generateProblem () {
+        this.clearChickens();
+        this.tappedChickens.clear();
+
+        const difficultyLevel = this.getDifficultyLevel();
+        const maxCount = difficultyLevel === 1 ? 5 : 10;
         let newSolution = this.solution;
-        while(newSolution === this.solution) {
-            newSolution = Math.floor(Math.random()*9)+1;
+        while (newSolution === this.solution) {
+            newSolution = Phaser.Math.Between(1, maxCount);
         }
         this.solution = newSolution;
-        for(let i = 0; i < 10; i++) {
-            this.eggs[i].setVisible(i < this.solution);
+
+        this.countText.setText('');
+        this.updateFrameLayout();
+        this.createChickenLayout();
+    }
+
+    createChickenLayout () {
+        const positions = this.getChickenPositions();
+        positions.slice(0, this.solution).forEach((position, index) => {
+            const sprite = this.add.sprite(position.x, position.y, 'chicken')
+                .setScale(position.scale)
+                .setDepth(20)
+                .setInteractive({ cursor: 'pointer' });
+            const badge = this.addGameText(position.x, position.y - 44, '', {
+                fontFamily: GameScene.FONT_FAMILY,
+                fontSize: 24,
+                color: '#fff7df',
+                stroke: '#284126',
+                strokeThickness: 6
+            }).setOrigin(0.5).setDepth(30);
+
+            sprite.on('pointerup', () => {
+                this.markChicken(index);
+            });
+
+            this.chickens.push({ sprite, badge });
+        });
+    }
+
+    updateFrameLayout () {
+        const slotCount = this.getMaxAnswerValue();
+        const useFrame = this.getDifficultyLevel() < 3;
+        const isFiveFrame = slotCount === 5;
+        const baseY = isFiveFrame ? -46 : -26;
+        const baseHeight = isFiveFrame ? 132 : 250;
+        const slotWidth = 90;
+        const slotHeight = 88;
+        const gap = 12;
+        const startX = -2 * (slotWidth + gap);
+        const startY = isFiveFrame ? -46 : -80;
+
+        this.frameSlots.forEach((slot) => slot.destroy());
+        this.frameSlots = [];
+
+        this.frameBase.setVisible(useFrame);
+        if (!useFrame) {
+            return;
+        }
+
+        this.frameBase
+            .setPosition(0, baseY)
+            .setSize(560, baseHeight)
+            .setDisplaySize(560, baseHeight);
+
+        for (let index = 0; index < slotCount; index++) {
+            const column = index % 5;
+            const row = Math.floor(index / 5);
+            const x = startX + column * (slotWidth + gap);
+            const y = startY + row * 108;
+            const slot = this.add.rectangle(x, y, slotWidth, slotHeight, 0xfffaee)
+                .setStrokeStyle(4, 0xa97d3f)
+                .setDepth(8);
+            this.frameSlots.push(slot);
         }
     }
 
-    update(t: number, dt:number) {
+    getChickenPositions () {
+        if (this.getDifficultyLevel() < 3) {
+            return this.frameSlots.map((slot) => ({
+                x: slot.x,
+                y: slot.y + 4,
+                scale: this.getDifficultyLevel() === 1 ? 0.54 : 0.46
+            }));
+        }
+
+        return [
+            { x: -275, y: -90, scale: 0.68 },
+            { x: -170, y: -120, scale: 0.62 },
+            { x: -28, y: -46, scale: 0.76 },
+            { x: 92, y: -118, scale: 0.62 },
+            { x: 260, y: -84, scale: 0.7 },
+            { x: -244, y: 64, scale: 0.72 },
+            { x: -78, y: 92, scale: 0.64 },
+            { x: 76, y: 38, scale: 0.78 },
+            { x: 224, y: 106, scale: 0.66 },
+            { x: 8, y: 158, scale: 0.7 }
+        ];
     }
+
+    markChicken (index: number) {
+        if (this.tappedChickens.has(index)) {
+            return;
+        }
+
+        const chicken = this.chickens[index];
+        if (!chicken) {
+            return;
+        }
+
+        this.tappedChickens.add(index);
+        const count = this.tappedChickens.size;
+        chicken.badge.setText(`${count}`);
+        chicken.sprite.setTint(0xfff1a8);
+        this.tweens.add({
+            targets: chicken.sprite,
+            scaleX: chicken.sprite.scaleX * 1.08,
+            scaleY: chicken.sprite.scaleY * 1.08,
+            duration: 120,
+            yoyo: true
+        });
+
+        if (count === this.solution) {
+            this.countText.setText('Counted them all.');
+        }
+        else {
+            this.countText.setText(`${count}`);
+        }
+    }
+
+    clearChickens () {
+        this.chickens.forEach(({ sprite, badge }) => {
+            sprite.destroy();
+            badge.destroy();
+        });
+        this.chickens = [];
+    }
+
+    update () {}
 
     changeScene ()
     {

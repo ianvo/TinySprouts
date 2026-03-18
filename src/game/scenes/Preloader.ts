@@ -9,8 +9,7 @@ export class Preloader extends Scene
 
     init ()
     {
-        //  We loaded this image in our Boot Scene, so we can display it here
-        this.add.image(512, 384, 'background');
+        this.cameras.main.setBackgroundColor('rgba(0,0,0,0)');
 
         //  A simple progress bar. This is the outline of the bar.
         this.add.rectangle(512, 384, 468, 32).setStrokeStyle(1, 0xffffff);
@@ -38,6 +37,7 @@ export class Preloader extends Scene
         this.load.image('classroom', 'sprites/Classroom_Day.png');
         this.load.image('cafeteria', 'sprites/Cafeteria_Day.png');
         this.load.image('restaurant', 'sprites/Restaurant_A.png');
+        this.load.image('coop', 'background/coop.png');
         this.load.image('button', 'sprites/blue_button07.png');
 
 

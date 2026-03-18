@@ -1,5 +1,5 @@
 import { forwardRef, useEffect, useLayoutEffect, useRef } from 'react';
-import StartGame from './main';
+import StartGame, { GAME_VERSION } from './main';
 import { EventBus } from './EventBus';
 
 export interface IRefPhaserGame
@@ -10,27 +10,39 @@ export interface IRefPhaserGame
 
 interface IProps
 {
-    currentActiveScene?: (scene_instance: Phaser.Scene) => void
+    currentActiveScene?: (scene_instance: Phaser.Scene) => void;
+    difficultyLevel: number;
+    backgroundKey: string;
 }
 
-export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame({ currentActiveScene }, ref)
+export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame({ currentActiveScene, difficultyLevel, backgroundKey }, ref)
 {
     const game = useRef<Phaser.Game | null>(null!);
 
     useLayoutEffect(() =>
     {
-        if (game.current === null)
+        const container = document.getElementById('game-container');
+
+        if (game.current)
         {
+            game.current.destroy(true);
+            game.current = null;
+        }
 
-            game.current = StartGame("game-container");
+        if (container)
+        {
+            container.innerHTML = '';
+        }
 
-            if (typeof ref === 'function')
-            {
-                ref({ game: game.current, scene: null });
-            } else if (ref)
-            {
-                ref.current = { game: game.current, scene: null };
-            }
+        game.current = StartGame("game-container");
+        game.current.registry.set('difficultyLevel', difficultyLevel);
+
+        if (typeof ref === 'function')
+        {
+            ref({ game: game.current, scene: null });
+        } else if (ref)
+        {
+            ref.current = { game: game.current, scene: null };
 
         }
 
@@ -45,11 +57,11 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame
                 }
             }
         }
-    }, [ref]);
+    }, [ref, GAME_VERSION]);
 
     useEffect(() =>
     {
-        EventBus.on('current-scene-ready', (scene_instance: Phaser.Scene) =>
+        const handleCurrentSceneReady = (scene_instance: Phaser.Scene) =>
         {
             if (currentActiveScene && typeof currentActiveScene === 'function')
             {
@@ -70,17 +82,29 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame
 
             }
             
-        });
+        };
+
+        EventBus.on('current-scene-ready', handleCurrentSceneReady);
         return () =>
         {
-
-            EventBus.removeListener('current-scene-ready');
-        
+            EventBus.off('current-scene-ready', handleCurrentSceneReady);
         }
-    }, [currentActiveScene, ref]);
+    }, [currentActiveScene, ref, GAME_VERSION]);
+
+    useEffect(() =>
+    {
+        if (game.current)
+        {
+            game.current.registry.set('difficultyLevel', difficultyLevel);
+            EventBus.emit('difficulty-changed', difficultyLevel);
+        }
+    }, [difficultyLevel]);
 
     return (
-        <div id="game-container"></div>
+        <div
+            id="game-container"
+            style={{ '--game-bg-image': `url(/assets/background/${backgroundKey}.png)` } as React.CSSProperties}
+        ></div>
     );
 
 });

@@ -1,0 +1,5 @@
+.main {
+    min-height: 100vh;
+    --font-display: "Cooper Black", "Arial Rounded MT Bold", "Trebuchet MS", sans-serif;
+    --font-body: "Trebuchet MS", "Gill Sans", "Verdana", sans-serif;
+}
