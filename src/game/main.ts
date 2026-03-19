@@ -8,6 +8,14 @@ import { PatternGameScene } from './scenes/minigames/PatternGameScene';
 import { MemoryGameScene } from './scenes/minigames/MemoryGameScene';
 import { SubtractionGameScene } from './scenes/minigames/SubtractionGameScene';
 import { MakeTenGameScene } from './scenes/minigames/MakeTenGameScene';
+import { CompareCoopsGameScene } from './scenes/minigames/CompareCoopsGameScene';
+import { ChickenNumberLineGameScene } from './scenes/minigames/ChickenNumberLineGameScene';
+import { BuildCartonGameScene } from './scenes/minigames/BuildCartonGameScene';
+import { MissingEggBasketGameScene } from './scenes/minigames/MissingEggBasketGameScene';
+import { WaysToMakeGameScene } from './scenes/minigames/WaysToMakeGameScene';
+import { ShapeMatchGameScene } from './scenes/minigames/ShapeMatchGameScene';
+import { CompareLengthGameScene } from './scenes/minigames/CompareLengthGameScene';
+import { SortRuleGameScene } from './scenes/minigames/SortRuleGameScene';
 
 export const GAME_VERSION = Date.now();
 
@@ -33,7 +41,15 @@ const config: Phaser.Types.Core.GameConfig = {
         AdditionGameScene,
         SubtractionGameScene,
         CountingGameScene,
+        CompareCoopsGameScene,
         MakeTenGameScene,
+        MissingEggBasketGameScene,
+        ChickenNumberLineGameScene,
+        BuildCartonGameScene,
+        WaysToMakeGameScene,
+        ShapeMatchGameScene,
+        CompareLengthGameScene,
+        SortRuleGameScene,
         PatternGameScene,
         MemoryGameScene
     ]

@@ -29,7 +29,7 @@ export class MemoryGameScene extends GameScene
 
     constructor ()
     {
-        super('MemoryGameScene', 'Egg Match');
+        super('MemoryGameScene', 'Memory Match');
         this.tiles = [];
         this.selectedTiles = [];
         this.inputLocked = false;

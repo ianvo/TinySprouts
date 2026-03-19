@@ -1,6 +1,7 @@
 import { Scene } from 'phaser';
 import {Howl} from 'howler';
 import { EventBus } from '../EventBus';
+import { CropName, CROP_SPRITESHEET_KEY, getCropFrame } from '../crops';
 
 
 export class GameScene extends Scene {
@@ -59,6 +60,10 @@ export class GameScene extends Scene {
         const background = this.add.image(0, 0, this.getBackgroundAssetKey());
         background.setDisplaySize(1024, 768);
         return background;
+    }
+
+    addCropSprite (x: number, y: number, crop: CropName, frame?: number) {
+        return this.add.sprite(x, y, CROP_SPRITESHEET_KEY, frame ?? getCropFrame(crop));
     }
 
     addGameText (

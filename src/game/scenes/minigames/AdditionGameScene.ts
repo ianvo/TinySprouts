@@ -27,7 +27,7 @@ export class AdditionGameScene extends GameScene
 
     constructor ()
     {
-        super('AdditionGameScene', 'Egg Addition');
+        super('AdditionGameScene', 'Addition');
         this.problem = '';
         this.solution = 0;
         this.proposedAnswer = '';

@@ -1,4 +1,5 @@
 import { Scene } from 'phaser';
+import { CROP_FRAME_HEIGHT, CROP_FRAME_WIDTH, CROP_SPRITESHEET_KEY } from '../crops';
 
 export class Preloader extends Scene
 {
@@ -38,11 +39,15 @@ export class Preloader extends Scene
         this.load.image('cafeteria', 'sprites/Cafeteria_Day.png');
         this.load.image('restaurant', 'sprites/Restaurant_A.png');
         this.load.image('coop', 'background/coop.png');
+        this.load.image('greenhouse', 'background/greenhouse.png');
+        this.load.image('farmyard', 'background/farmyard.png');
         this.load.image('button', 'sprites/blue_button07.png');
 
-
-
         this.load.spritesheet("eggs", "sprites/eggs.png", {frameWidth: 24, frameHeight: 24});      
+        this.load.spritesheet(CROP_SPRITESHEET_KEY, 'sprites/crops.png', {
+            frameWidth: CROP_FRAME_WIDTH,
+            frameHeight: CROP_FRAME_HEIGHT
+        });
 
         this.load.image('card_back', "sprites/cards/cardBack_blue5.png");
         for(var i = 2; i <= 10; i++) {

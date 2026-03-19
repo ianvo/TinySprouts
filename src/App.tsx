@@ -9,39 +9,124 @@ const difficultyModes = [
 ];
 
 const gameBackgrounds: Record<string, string> = {
+    MainMenu: 'farmyard',
+    PatternGameScene: 'greenhouse',
+    ShapeMatchGameScene: 'greenhouse',
+    CompareLengthGameScene: 'farmyard',
+    SortRuleGameScene: 'greenhouse',
+    AdditionGameScene: 'coop',
+    SubtractionGameScene: 'coop',
+    CountingGameScene: 'coop',
+    CompareCoopsGameScene: 'coop',
+    MakeTenGameScene: 'coop',
+    MissingEggBasketGameScene: 'coop',
+    ChickenNumberLineGameScene: 'coop',
+    BuildCartonGameScene: 'coop',
+    WaysToMakeGameScene: 'coop',
+    MemoryGameScene: 'coop',
     default: 'coop'
 };
 
-const activities = [
+const activityGroups = [
     {
-        key: 'CountingGameScene',
-        label: 'Counting Coop',
-        description: 'Count the chickens one by one and match the total.'
+        label: 'Number Sense',
+        activities: [
+            {
+                key: 'CountingGameScene',
+                label: 'Counting',
+                description: 'Count objects and match the total.'
+            },
+            {
+                key: 'CompareCoopsGameScene',
+                label: 'Comparing Quantities',
+                description: 'Compare two groups and choose more, less, or equal.'
+            },
+            {
+                key: 'MakeTenGameScene',
+                label: 'Make 5 and 10',
+                description: 'Use frames to complete number bonds to 5 and 10.'
+            },
+            {
+                key: 'ChickenNumberLineGameScene',
+                label: 'Number Line',
+                description: 'Place numbers on a number line and identify before, after, and between.'
+            },
+            {
+                key: 'BuildCartonGameScene',
+                label: 'Place Value',
+                description: 'Read tens and ones to identify a number.'
+            }
+        ]
     },
     {
-        key: 'MakeTenGameScene',
-        label: 'Fill the Frame',
-        description: 'Tap the egg group that fills the frame.'
+        label: 'Addition & Subtraction',
+        activities: [
+            {
+                key: 'AdditionGameScene',
+                label: 'Addition',
+                description: 'Combine two groups to find the total.'
+            },
+            {
+                key: 'MissingEggBasketGameScene',
+                label: 'Missing Addends',
+                description: 'Find the missing part in an addition equation.'
+            },
+            {
+                key: 'SubtractionGameScene',
+                label: 'Subtraction',
+                description: 'Take away from a group and find how many are left.'
+            },
+            {
+                key: 'WaysToMakeGameScene',
+                label: 'Number Combinations',
+                description: 'Find different pairs that make the same total.'
+            }
+        ]
     },
     {
-        key: 'AdditionGameScene',
-        label: 'Egg Addition',
-        description: 'See two egg groups, count them together, and build bigger sums.'
+        label: 'Patterns & Logic',
+        activities: [
+            {
+                key: 'PatternGameScene',
+                label: 'Patterns',
+                description: 'Complete crop and number patterns.'
+            },
+            {
+                key: 'MemoryGameScene',
+                label: 'Memory Match',
+                description: 'Match cards by value and number relationships.'
+            }
+        ]
     },
     {
-        key: 'SubtractionGameScene',
-        label: 'Egg Subtraction',
-        description: 'Watch eggs roll away and figure out how many are left.'
+        label: 'Geometry & Spatial Reasoning',
+        activities: [
+            {
+                key: 'ShapeMatchGameScene',
+                label: 'Shape Match',
+                description: 'Match a shape to its outline.'
+            }
+        ]
     },
     {
-        key: 'PatternGameScene',
-        label: 'Coop Patterns',
-        description: 'Start with egg and chicken patterns, then move into number patterns.'
+        label: 'Measurement',
+        activities: [
+            {
+                key: 'CompareLengthGameScene',
+                label: 'Compare Length',
+                description: 'Decide which fence is longer or if they are the same.'
+            }
+        ]
     },
     {
-        key: 'MemoryGameScene',
-        label: 'Egg Match',
-        description: 'Flip cards to match numbers and egg groups, then make-10 pairs.'
+        label: 'Sorting & Data',
+        activities: [
+            {
+                key: 'SortRuleGameScene',
+                label: 'Sorting',
+                description: 'Sort crops by a visible rule.'
+            }
+        ]
     }
 ];
 
@@ -49,7 +134,6 @@ function App()
 {
     const [gameTitle, setGameTitle] = useState("");
     const [activeSceneKey, setActiveSceneKey] = useState("MainMenu");
-    const [panelOpen, setPanelOpen] = useState(false);
     const [difficultyLevel, setDifficultyLevel] = useState(1);
     const showingChooser = activeSceneKey === "MainMenu";
     const backgroundKey = gameBackgrounds[activeSceneKey] ?? gameBackgrounds.default;
@@ -78,20 +162,35 @@ function App()
             if (scene)
             {
                 scene.startScene(key);
-                setPanelOpen(false);
             }
         }
     }
 
-    return (
-        <div id="app" className={panelOpen ? "drawer_open" : ""}>
-            <button
-                type="button"
-                id="drawer_scrim"
-                aria-label="Close game picker"
-                onClick={() => { setPanelOpen(false); }}
-            />
+    const renderActivityGroups = (isChooser: boolean) => (
+        <div className={`activity_groups${isChooser ? ' chooser_groups' : ''}`}>
+            {activityGroups.map((group) => (
+                <section key={group.label} className="activity_group">
+                    <h3 className="activity_group_title">{group.label}</h3>
+                    <div className="activity_group_list">
+                        {group.activities.map((activity) => (
+                            <button
+                                key={activity.key}
+                                type="button"
+                                className={`game_button${!isChooser && activeSceneKey === activity.key ? ' active' : ''}`}
+                                onClick={() => { launchScene(activity.key); }}
+                            >
+                                <span className="game_button_title">{activity.label}</span>
+                                <span className="game_button_text">{activity.description}</span>
+                            </button>
+                        ))}
+                    </div>
+                </section>
+            ))}
+        </div>
+    );
 
+    return (
+        <div id="app">
             <section id="contents">
                 <div id="game-shell">
                     <div className="topbar">
@@ -115,11 +214,10 @@ function App()
                             <button
                                 type="button"
                                 className="drawer_toggle"
-                                aria-expanded={panelOpen}
-                                aria-controls="controls"
-                                onClick={() => { setPanelOpen((open) => !open); }}
+                                onClick={() => { launchScene("MainMenu"); }}
+                                disabled={showingChooser}
                             >
-                                {showingChooser ? "Game List" : panelOpen ? "Close Games" : "Change Game"}
+                                {showingChooser ? "Home" : "Back Home"}
                             </button>
                         </div>
                     </div>
@@ -140,68 +238,12 @@ function App()
                                     Choose any activity to jump straight in.
                                 </p>
 
-                                <div className="activity_list chooser_list">
-                                    {activities.map((activity) => (
-                                        <button
-                                            key={activity.key}
-                                            type="button"
-                                            className="game_button"
-                                            onClick={() => { launchScene(activity.key); }}
-                                        >
-                                            <span className="game_button_title">{activity.label}</span>
-                                            <span className="game_button_text">{activity.description}</span>
-                                        </button>
-                                    ))}
-                                </div>
+                                {renderActivityGroups(true)}
                             </div>
                         </div>
                     ) : null}
                 </div>
             </section>
-
-            <aside id="controls" aria-hidden={!panelOpen}>
-                <div className="panel_card drawer_card">
-                    <div className="drawer_header">
-                        <div>
-                            <p className="panel_eyebrow">Learning Garden</p>
-                            <h2>Pick a game</h2>
-                        </div>
-                        <button
-                            type="button"
-                            className="drawer_close"
-                            aria-label="Close game picker"
-                            onClick={() => { setPanelOpen(false); }}
-                        >
-                            x
-                        </button>
-                    </div>
-
-                    <p className="panel_text">
-                        Jump to a new activity whenever the player wants a different challenge.
-                    </p>
-
-                    <div className="activity_list">
-                        {activities.map((activity) => (
-                            <button
-                                key={activity.key}
-                                type="button"
-                                className={`game_button${activeSceneKey === activity.key ? ' active' : ''}`}
-                                onClick={() => { launchScene(activity.key); }}
-                            >
-                                <span className="game_button_title">{activity.label}</span>
-                                <span className="game_button_text">{activity.description}</span>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                <div className="panel_card tip_card">
-                    <p className="panel_eyebrow">Grown-up Tip</p>
-                    <p className="panel_text">
-                        Short play sessions work well here. Switch often and let repetition happen naturally.
-                    </p>
-                </div>
-            </aside>
         </div>
     )
 }

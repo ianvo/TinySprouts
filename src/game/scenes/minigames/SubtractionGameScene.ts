@@ -28,7 +28,7 @@ export class SubtractionGameScene extends GameScene
 
     constructor ()
     {
-        super('SubtractionGameScene', 'Egg Subtraction');
+        super('SubtractionGameScene', 'Subtraction');
         this.problem = '';
         this.solution = 0;
         this.proposedAnswer = '';
@@ -183,12 +183,13 @@ export class SubtractionGameScene extends GameScene
 
     addButton (value: number, x: number, y: number) {
         const compactLayout = this.getMaxAnswerValue() > 10;
+        const isVisualLevel = this.getDifficultyLevel() === 1;
         const button = this.add.container(x, y);
         const sprite = this.add.sprite(0, 0, 'button');
-        sprite.setScale(compactLayout ? 1.62 : 1.92);
+        sprite.setScale(compactLayout ? 1.62 : isVisualLevel ? 2.08 : 1.92);
         sprite.setOrigin(0.5, 0.5);
         sprite.setInteractive({ cursor: 'pointer' });
-        const text = this.addGameText(0, 0, `${value}`, {
+        const text = this.addGameText(0, isVisualLevel ? -22 : 0, `${value}`, {
             fontFamily: GameScene.FONT_FAMILY,
             fontSize: compactLayout ? 30 : 38,
             color: '#ffffff',
@@ -198,6 +199,16 @@ export class SubtractionGameScene extends GameScene
         }).setOrigin(0.5, 0.5);
         text.disableInteractive();
         button.add([sprite, text]);
+
+        if (isVisualLevel) {
+            const spacing = 18;
+            const startX = -((value - 1) * spacing) / 2;
+            for (let index = 0; index < value; index++) {
+                const egg = this.add.ellipse(startX + index * spacing, 18, 12, 16, GameScene.EGG_FILL)
+                    .setStrokeStyle(2, 0x8a6230);
+                button.add(egg);
+            }
+        }
 
         sprite.on('pointerup', () => {
             this.submitAnswer(value);

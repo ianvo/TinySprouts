@@ -2,8 +2,9 @@ import { EventBus } from '../../EventBus';
 import { GameScene } from '../GameScene';
 import { Howl } from 'howler';
 import { NumericKeypad } from './NumericKeypad';
+import { CropName } from '../../crops';
 
-type PatternSymbol = 'egg' | 'chicken' | 'star';
+type PatternSymbol = 'tomato' | 'corn' | 'carrot';
 
 export class PatternGameScene extends GameScene
 {
@@ -30,7 +31,7 @@ export class PatternGameScene extends GameScene
 
     constructor ()
     {
-        super('PatternGameScene', 'Coop Patterns');
+        super('PatternGameScene', 'Patterns');
         this.problem = '';
         this.solution = 0;
         this.proposedAnswer = '';
@@ -40,7 +41,7 @@ export class PatternGameScene extends GameScene
         this.optionCards = [];
         this.visualObjects = [];
         this.visualPattern = [];
-        this.visualSolution = 'egg';
+        this.visualSolution = 'tomato';
     }
 
     create ()
@@ -270,20 +271,123 @@ export class PatternGameScene extends GameScene
             return;
         }
 
-        const maxValue = difficultyLevel === 2 ? 20 : 99;
-        const maxDiff = difficultyLevel === 2 ? 3 : 12;
         const visibleTerms = 5;
-        const diff = Phaser.Math.Between(1, maxDiff);
-        const start = Phaser.Math.Between(1, maxValue - diff * visibleTerms);
-
-        this.problem = '';
         const sequence: number[] = [];
-        for (let index = 0; index < visibleTerms; index++) {
-            sequence.push(start + diff * index);
+
+        if (difficultyLevel === 2) {
+            const maxValue = 20;
+            const diff = Phaser.Math.Between(1, 3);
+            const start = Phaser.Math.Between(1, maxValue - diff * visibleTerms);
+
+            for (let index = 0; index < visibleTerms; index++) {
+                sequence.push(start + diff * index);
+            }
+            this.solution = start + diff * visibleTerms;
         }
-        this.solution = start + diff * visibleTerms;
+        else {
+            const levelThreePattern = this.createLevelThreePattern(visibleTerms);
+            sequence.push(...levelThreePattern.sequence);
+            this.solution = levelThreePattern.solution;
+        }
+
         this.problem = sequence.join('   ');
         this.renderNumericPattern(sequence);
+    }
+
+    createLevelThreePattern (visibleTerms: number) {
+        const patternTypes: Array<'increase' | 'decrease' | 'alternate-up' | 'alternate-down' | 'alternate-mixed'> = [
+            'increase',
+            'decrease',
+            'alternate-up',
+            'alternate-down',
+            'alternate-mixed'
+        ];
+
+        for (let attempt = 0; attempt < 80; attempt++) {
+            const patternType = Phaser.Utils.Array.GetRandom(patternTypes);
+            const candidate = patternType === 'increase'
+                ? this.createSteadyPattern(visibleTerms, 1)
+                : patternType === 'decrease'
+                    ? this.createSteadyPattern(visibleTerms, -1)
+                    : patternType === 'alternate-up'
+                        ? this.createAlternatingPattern(visibleTerms, 'up')
+                        : patternType === 'alternate-down'
+                            ? this.createAlternatingPattern(visibleTerms, 'down')
+                            : this.createAlternatingPattern(visibleTerms, 'mixed');
+
+            if (candidate) {
+                return candidate;
+            }
+        }
+
+        return this.createSteadyPattern(visibleTerms, 1) ?? {
+            sequence: [10, 15, 20, 25, 30],
+            solution: 35
+        };
+    }
+
+    createSteadyPattern (visibleTerms: number, direction: 1 | -1) {
+        const diff = Phaser.Math.Between(2, 12) * direction;
+        const minValue = 1;
+        const maxValue = 99;
+        const start = direction > 0
+            ? Phaser.Math.Between(1, maxValue - Math.abs(diff) * visibleTerms)
+            : Phaser.Math.Between(minValue + Math.abs(diff) * visibleTerms, maxValue);
+
+        const values = [start];
+        for (let index = 0; index < visibleTerms; index++) {
+            values.push(values[index] + diff);
+        }
+
+        if (!this.isValidLevelThreeSequence(values)) {
+            return null;
+        }
+
+        return {
+            sequence: values.slice(0, visibleTerms),
+            solution: values[visibleTerms]
+        };
+    }
+
+    createAlternatingPattern (visibleTerms: number, mode: 'up' | 'down' | 'mixed') {
+        const stepA = Phaser.Math.Between(2, 10);
+        let stepB = Phaser.Math.Between(2, 10);
+        if (stepB === stepA) {
+            stepB = Math.min(12, stepB + 2);
+        }
+
+        const deltas = mode === 'up'
+            ? [stepA, stepB]
+            : mode === 'down'
+                ? [-stepA, -stepB]
+                : Phaser.Utils.Array.GetRandom([
+                    [stepA, -stepB],
+                    [-stepA, stepB]
+                ]);
+
+        for (let attempt = 0; attempt < 20; attempt++) {
+            const start = Phaser.Math.Between(8, 92);
+            const values = [start];
+            for (let index = 0; index < visibleTerms; index++) {
+                values.push(values[index] + deltas[index % 2]);
+            }
+
+            if (!this.isValidLevelThreeSequence(values)) {
+                continue;
+            }
+
+            return {
+                sequence: values.slice(0, visibleTerms),
+                solution: values[visibleTerms]
+            };
+        }
+
+        return null;
+    }
+
+    isValidLevelThreeSequence (values: number[]) {
+        return values.every((value) => value >= 1 && value <= 99)
+            && new Set(values).size === values.length;
     }
 
     generateVisualPattern () {
@@ -301,7 +405,7 @@ export class PatternGameScene extends GameScene
     }
 
     createVisualMotif () {
-        const symbols: PatternSymbol[] = ['egg', 'chicken', 'star'];
+        const symbols: PatternSymbol[] = ['tomato', 'corn', 'carrot'];
 
         while (true) {
             const motifLength = Phaser.Math.Between(2, 3);
@@ -352,7 +456,7 @@ export class PatternGameScene extends GameScene
     }
 
     createVisualOptions () {
-        const allSymbols: PatternSymbol[] = ['egg', 'chicken', 'star'];
+        const allSymbols: PatternSymbol[] = ['tomato', 'corn', 'carrot'];
         const choices = Phaser.Utils.Array.Shuffle([
             this.visualSolution,
             ...allSymbols.filter((symbol) => symbol !== this.visualSolution).slice(0, 2)
@@ -392,98 +496,31 @@ export class PatternGameScene extends GameScene
 
     renderNumericPattern (sequence: number[]) {
         const difficultyLevel = this.getDifficultyLevel();
-        const showEggs = difficultyLevel === 2;
-        this.promptText.setText(difficultyLevel === 2 ? 'Which number comes next?' : `${this.problem}   ${this.proposedAnswer === '' ? '?' : this.proposedAnswer}`);
+        this.promptText.setText(
+            difficultyLevel === 2
+                ? `${sequence.join('   ')}   ?`
+                : `${this.problem}   ${this.proposedAnswer === '' ? '?' : this.proposedAnswer}`
+        );
         this.feedbackText.setText('');
-
-        if (!showEggs) {
-            return;
-        }
-
-        const slotCount = sequence.length + 1;
-        const spacing = 148;
-        const startX = -((slotCount - 1) * spacing) / 2;
-
-        sequence.forEach((value, index) => {
-            const x = startX + index * spacing;
-            this.createQuantityCard(x, -20, value);
-        });
-
-        const questionCard = this.add.rectangle(startX + sequence.length * spacing, -20, 132, 132, 0xfff6d9)
-            .setStrokeStyle(6, 0x966131)
-            .setDepth(20);
-        const questionText = this.addGameText(startX + sequence.length * spacing, -20, '?', {
-            fontFamily: GameScene.FONT_FAMILY,
-            fontSize: 54,
-            color: '#7d4a1b',
-            stroke: '#fff7df',
-            strokeThickness: 8
-        }).setOrigin(0.5).setDepth(25);
-        this.visualObjects.push(questionCard, questionText);
-    }
-
-    createQuantityCard (x: number, y: number, value: number) {
-        const cardWidth = 132;
-        const cardHeight = 132;
-        const card = this.add.rectangle(x, y, cardWidth, cardHeight, 0xfff6d9)
-            .setStrokeStyle(6, 0x966131)
-            .setDepth(20);
-        const label = this.addGameText(x, y - 46, `${value}`, {
-            fontFamily: GameScene.FONT_FAMILY,
-            fontSize: 26,
-            color: '#7d4a1b',
-            stroke: '#fff7df',
-            strokeThickness: 6
-        }).setOrigin(0.5).setDepth(24);
-        this.visualObjects.push(card, label);
-
-        const columns = Math.min(5, Math.max(1, value));
-        const rows = Math.ceil(value / columns);
-        const horizontalGap = 18;
-        const verticalGap = 20;
-        const startX = x - ((columns - 1) * horizontalGap) / 2;
-        const startY = y + 12 - ((rows - 1) * verticalGap) / 2;
-
-        for (let index = 0; index < value; index++) {
-            const egg = this.add.ellipse(
-                startX + (index % columns) * horizontalGap,
-                startY + Math.floor(index / columns) * verticalGap,
-                14,
-                18,
-                GameScene.EGG_FILL
-            ).setStrokeStyle(3, 0x9d7846).setDepth(24);
-            this.visualObjects.push(egg);
-        }
     }
 
     createPatternIcon (symbol: PatternSymbol, x: number, y: number, scale: number) {
-        if (symbol === 'egg') {
-            return this.add.ellipse(x, y, 48 * scale, 64 * scale, GameScene.EGG_FILL)
-                .setStrokeStyle(4, 0x9d7846)
-                .setDepth(25);
-        }
-
-        if (symbol === 'chicken') {
-            return this.add.sprite(x, y, 'chicken')
-                .setScale(0.6 * scale)
-                .setDepth(25);
-        }
-
-        return this.add.sprite(x, y, 'star')
-            .setScale(1.5 * scale)
+        return this.addCropSprite(x, y, symbol as CropName)
+            .setOrigin(0.5, 0.64)
+            .setScale(0.6 * scale)
             .setDepth(25);
     }
 
     getPatternLabel (symbol: PatternSymbol) {
-        if (symbol === 'egg') {
-            return 'Egg';
+        if (symbol === 'tomato') {
+            return 'Tomato';
         }
 
-        if (symbol === 'chicken') {
-            return 'Chicken';
+        if (symbol === 'corn') {
+            return 'Corn';
         }
 
-        return 'Star';
+        return 'Carrot';
     }
 
     submitVisualAnswer (answer: PatternSymbol) {

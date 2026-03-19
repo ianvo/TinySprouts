@@ -28,7 +28,7 @@ export class MakeTenGameScene extends GameScene
 
     constructor ()
     {
-        super('MakeTenGameScene', 'Fill the Frame');
+        super('MakeTenGameScene', 'Make 5 and 10');
     }
 
     create ()
@@ -56,7 +56,7 @@ export class MakeTenGameScene extends GameScene
             volume: 0.5
         }));
 
-        this.titleText = this.addGameText(0, -275, 'Fill the Frame', {
+        this.titleText = this.addGameText(0, -275, 'Make 5 and 10', {
             fontFamily: GameScene.FONT_FAMILY,
             fontSize: 34,
             color: '#ffffff',

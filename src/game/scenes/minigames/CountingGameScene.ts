@@ -23,7 +23,7 @@ export class CountingGameScene extends GameScene
 
     constructor ()
     {
-        super('CountingGameScene', 'Counting Coop');
+        super('CountingGameScene', 'Counting');
         this.frameSlots = [];
         this.chickens = [];
         this.solution = 0;
