@@ -160,37 +160,37 @@ export class MissingEggBasketGameScene extends GameScene
     {
         const isVisualLevel = this.getDifficultyLevel() === 1;
         const button = this.add.container(x, y);
-        const sprite = this.add.sprite(0, 0, 'button');
-        sprite.setScale(isVisualLevel ? 2.05 : 1.85);
-        sprite.setInteractive({ cursor: 'pointer' });
-        const label = this.addGameText(0, isVisualLevel ? -22 : 0, `${value}`, {
+        const card = this.add.rectangle(0, 0, 118, isVisualLevel ? 102 : 76, 0xfff7e3)
+            .setStrokeStyle(6, 0x8f5f2e)
+            .setInteractive({ cursor: 'pointer' });
+        const label = this.addGameText(0, isVisualLevel ? -16 : 0, `${value}`, {
             fontFamily: GameScene.FONT_FAMILY,
-            fontSize: 38,
-            color: '#ffffff',
-            stroke: '#000000',
-            strokeThickness: 8,
+            fontSize: 36,
+            color: '#8b4d1d',
+            stroke: '#fff8e5',
+            strokeThickness: 7,
             align: 'center'
         }).setOrigin(0.5);
         label.disableInteractive();
-        button.add([sprite, label]);
+        button.add([card, label]);
 
         if (isVisualLevel) {
-            const spacing = 18;
+            const spacing = 16;
             const startX = -((value - 1) * spacing) / 2;
             for (let index = 0; index < value; index++) {
-                const egg = this.add.ellipse(startX + index * spacing, 18, 12, 16, GameScene.EGG_FILL)
+                const egg = this.add.ellipse(startX + index * spacing, 22, 11, 15, GameScene.EGG_FILL)
                     .setStrokeStyle(2, 0x8a6230);
                 button.add(egg);
             }
         }
 
-        sprite.on('pointerup', () => {
+        card.on('pointerup', () => {
             this.submitAnswer(value);
         });
-        sprite.on('pointerover', () => {
-            button.setScale(1.06);
+        card.on('pointerover', () => {
+            button.setScale(1.04);
         });
-        sprite.on('pointerout', () => {
+        card.on('pointerout', () => {
             button.setScale(1);
         });
         this.answerButtons.push(button);

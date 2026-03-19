@@ -166,10 +166,18 @@ export class AdditionGameScene extends GameScene
     buildAnswerButtons () {
         const maxValue = this.getMaxAnswerValue();
         const columns = maxValue <= 10 ? 5 : 10;
-        const spacing = columns === 5 ? 160 : 94;
+        const spacing = columns === 5 ? 178 : 94;
         const startX = -((columns - 1) * spacing) / 2;
-        const startY = maxValue <= 10 ? GameScene.ANSWER_GRID_Y : GameScene.ANSWER_GRID_COMPACT_Y;
-        const rowSpacing = maxValue <= 10 ? GameScene.ANSWER_ROW_SPACING : GameScene.ANSWER_ROW_SPACING_COMPACT;
+        const startY = this.getDifficultyLevel() === 1
+            ? GameScene.ANSWER_GRID_Y - 26
+            : maxValue <= 10
+                ? GameScene.ANSWER_GRID_Y
+                : GameScene.ANSWER_GRID_COMPACT_Y;
+        const rowSpacing = this.getDifficultyLevel() === 1
+            ? GameScene.ANSWER_ROW_SPACING + 26
+            : maxValue <= 10
+                ? GameScene.ANSWER_ROW_SPACING
+                : GameScene.ANSWER_ROW_SPACING_COMPACT;
 
         for (let index = 0; index < maxValue; index++) {
             const value = index + 1;
@@ -181,31 +189,50 @@ export class AdditionGameScene extends GameScene
 
     addButton (value: number, x: number, y: number) {
         const compactLayout = this.getMaxAnswerValue() > 10;
+        const isVisualLevel = this.getDifficultyLevel() === 1;
         const button = this.add.container(x, y);
-        const sprite = this.add.sprite(0, 0, 'button');
-        sprite.setScale(compactLayout ? 1.62 : 1.92);
-        sprite.setOrigin(0.5, 0.5);
-        sprite.setInteractive({ cursor: 'pointer' });
-        const text = this.addGameText(0, 0, `${value}`, {
+        const card = this.add.rectangle(0, 0, compactLayout ? 92 : 118, isVisualLevel ? 102 : 76, 0xfff7e3)
+            .setStrokeStyle(6, 0x8f5f2e)
+            .setInteractive({ cursor: 'pointer' });
+        const text = this.addGameText(0, isVisualLevel ? -16 : 0, `${value}`, {
             fontFamily: GameScene.FONT_FAMILY,
-            fontSize: compactLayout ? 30 : 38,
-            color: '#ffffff',
-            stroke: '#000000',
-            strokeThickness: 8,
+            fontSize: compactLayout ? 28 : 36,
+            color: '#8b4d1d',
+            stroke: '#fff8e5',
+            strokeThickness: 7,
             align: 'center'
         }).setOrigin(0.5, 0.5);
         text.disableInteractive();
-        button.add([sprite, text]);
+        button.add([card, text]);
 
-        sprite.on('pointerup', () => {
+        if (isVisualLevel) {
+            const slotSpacingX = 16;
+            const slotSpacingY = 16;
+            const startEggX = -((5 - 1) * slotSpacingX) / 2;
+            for (let index = 0; index < value; index++) {
+                const column = index % 5;
+                const row = Math.floor(index / 5);
+                const egg = this.add.ellipse(
+                    startEggX + column * slotSpacingX,
+                    18 + row * slotSpacingY,
+                    11,
+                    15,
+                    GameScene.EGG_FILL
+                )
+                    .setStrokeStyle(2, 0x8a6230);
+                button.add(egg);
+            }
+        }
+
+        card.on('pointerup', () => {
             this.submitAnswer(value);
         });
 
-        sprite.on('pointerover', () => {
-            button.setScale(1.06);
+        card.on('pointerover', () => {
+            button.setScale(1.04);
         });
 
-        sprite.on('pointerout', () => {
+        card.on('pointerout', () => {
             button.setScale(1);
         });
 
@@ -276,12 +303,15 @@ export class AdditionGameScene extends GameScene
             first = Phaser.Math.Between(1, 5);
             second = Phaser.Math.Between(1, first);
         }
+        else if (difficultyLevel === 2) {
+            first = Phaser.Math.Between(1, 10);
+            second = Phaser.Math.Between(1, first);
+        }
         else {
-            const maxTotal = difficultyLevel === 2 ? 20 : 99;
-            const minTotal = difficultyLevel === 2 ? 6 : 15;
+            const maxTotal = 99;
+            const minTotal = 15;
             const total = Phaser.Math.Between(minTotal, maxTotal);
-            const minFirst = difficultyLevel === 2 ? Math.ceil(total / 2) : 1;
-            first = Phaser.Math.Between(minFirst, total - 1);
+            first = Phaser.Math.Between(1, total - 1);
             second = total - first;
         }
 

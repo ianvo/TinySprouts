@@ -593,7 +593,7 @@ export class PatternGameScene extends GameScene
     }
 
     applyTextLayout (difficultyLevel: number) {
-        if (difficultyLevel === 3) {
+        if (difficultyLevel >= 2) {
             this.promptText.setPosition(0, PatternGameScene.SYMBOLIC_PROMPT_Y);
             this.promptText.setFontSize(156);
             this.feedbackText.setPosition(0, PatternGameScene.SYMBOLIC_FEEDBACK_Y);

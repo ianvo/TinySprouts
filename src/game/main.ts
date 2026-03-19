@@ -16,6 +16,9 @@ import { WaysToMakeGameScene } from './scenes/minigames/WaysToMakeGameScene';
 import { ShapeMatchGameScene } from './scenes/minigames/ShapeMatchGameScene';
 import { CompareLengthGameScene } from './scenes/minigames/CompareLengthGameScene';
 import { SortRuleGameScene } from './scenes/minigames/SortRuleGameScene';
+import { BuildShapeGameScene } from './scenes/minigames/BuildShapeGameScene';
+import { OrderByLengthGameScene } from './scenes/minigames/OrderByLengthGameScene';
+import { PictureGraphGameScene } from './scenes/minigames/PictureGraphGameScene';
 
 export const GAME_VERSION = Date.now();
 
@@ -48,8 +51,11 @@ const config: Phaser.Types.Core.GameConfig = {
         BuildCartonGameScene,
         WaysToMakeGameScene,
         ShapeMatchGameScene,
+        BuildShapeGameScene,
         CompareLengthGameScene,
+        OrderByLengthGameScene,
         SortRuleGameScene,
+        PictureGraphGameScene,
         PatternGameScene,
         MemoryGameScene
     ]

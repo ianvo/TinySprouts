@@ -12,8 +12,11 @@ const gameBackgrounds: Record<string, string> = {
     MainMenu: 'farmyard',
     PatternGameScene: 'greenhouse',
     ShapeMatchGameScene: 'greenhouse',
+    BuildShapeGameScene: 'farmyard',
     CompareLengthGameScene: 'farmyard',
+    OrderByLengthGameScene: 'farmyard',
     SortRuleGameScene: 'greenhouse',
+    PictureGraphGameScene: 'greenhouse',
     AdditionGameScene: 'coop',
     SubtractionGameScene: 'coop',
     CountingGameScene: 'coop',
@@ -105,6 +108,11 @@ const activityGroups = [
                 key: 'ShapeMatchGameScene',
                 label: 'Shape Match',
                 description: 'Match a shape to its outline.'
+            },
+            {
+                key: 'BuildShapeGameScene',
+                label: 'Build the Shape',
+                description: 'Choose the pieces that build a target shape.'
             }
         ]
     },
@@ -115,6 +123,11 @@ const activityGroups = [
                 key: 'CompareLengthGameScene',
                 label: 'Compare Length',
                 description: 'Decide which fence is longer or if they are the same.'
+            },
+            {
+                key: 'OrderByLengthGameScene',
+                label: 'Order by Length',
+                description: 'Put fences in order from shortest to longest.'
             }
         ]
     },
@@ -125,6 +138,11 @@ const activityGroups = [
                 key: 'SortRuleGameScene',
                 label: 'Sorting',
                 description: 'Sort crops by a visible rule.'
+            },
+            {
+                key: 'PictureGraphGameScene',
+                label: 'Picture Graph',
+                description: 'Read a crop graph and answer questions about it.'
             }
         ]
     }

@@ -2,12 +2,17 @@ import { Howl } from 'howler';
 import { EventBus } from '../../EventBus';
 import { GameScene } from '../GameScene';
 
-type PromptMode = 'direct' | 'after' | 'before' | 'between';
-
 type NumberDot = {
     value: number;
     x: number;
     dot: Phaser.GameObjects.Ellipse;
+};
+
+type HopPrompt = {
+    promptText: string;
+    startValue: number;
+    targetValue: number;
+    hops: number[];
 };
 
 export class ChickenNumberLineGameScene extends GameScene
@@ -20,6 +25,8 @@ export class ChickenNumberLineGameScene extends GameScene
     dots: NumberDot[];
     maxValue: number;
     targetValue: number;
+    startValue: number;
+    hopSteps: number[];
     inputLocked: boolean;
 
     constructor ()
@@ -29,6 +36,8 @@ export class ChickenNumberLineGameScene extends GameScene
         this.dots = [];
         this.maxValue = 10;
         this.targetValue = 0;
+        this.startValue = 0;
+        this.hopSteps = [];
         this.inputLocked = false;
     }
 
@@ -97,72 +106,123 @@ export class ChickenNumberLineGameScene extends GameScene
         this.feedbackText.setText('');
 
         const difficultyLevel = this.getDifficultyLevel();
-        this.maxValue = difficultyLevel === 1 ? 10 : difficultyLevel === 2 ? 15 : 20;
+        this.maxValue = difficultyLevel === 3 ? 20 : 10;
 
-        const mode = this.pickMode(difficultyLevel);
-        this.targetValue = 0;
-
-        if (mode === 'direct') {
-            this.targetValue = Phaser.Math.Between(0, this.maxValue);
-            this.promptText.setText(`Tap ${this.targetValue}.`);
-        }
-        else if (mode === 'after') {
-            const base = Phaser.Math.Between(0, this.maxValue - 1);
-            this.targetValue = base + 1;
-            this.promptText.setText(`Tap the number after ${base}.`);
-        }
-        else if (mode === 'before') {
-            const base = Phaser.Math.Between(1, this.maxValue);
-            this.targetValue = base - 1;
-            this.promptText.setText(`Tap the number before ${base}.`);
-        }
-        else {
-            this.targetValue = Phaser.Math.Between(1, this.maxValue - 1);
-            this.promptText.setText(`Tap the number between ${this.targetValue - 1} and ${this.targetValue + 1}.`);
-        }
-
-        this.renderLine();
-    }
-
-    pickMode (difficultyLevel: number): PromptMode
-    {
         if (difficultyLevel === 1) {
-            return 'direct';
+            this.startValue = 0;
+            this.targetValue = Phaser.Math.Between(0, this.maxValue);
+            this.hopSteps = [this.targetValue];
+            this.promptText.setText(`Tap where ${this.targetValue} goes.`);
+        } else if (difficultyLevel === 2) {
+            const hop = this.buildSingleHopPrompt();
+            this.startValue = hop.startValue;
+            this.targetValue = hop.targetValue;
+            this.hopSteps = hop.hops;
+            this.promptText.setText(hop.promptText);
+        } else {
+            const hop = this.buildTwoStepPrompt();
+            this.startValue = hop.startValue;
+            this.targetValue = hop.targetValue;
+            this.hopSteps = hop.hops;
+            this.promptText.setText(hop.promptText);
         }
 
-        if (difficultyLevel === 2) {
-            return Phaser.Utils.Array.GetRandom<PromptMode>(['direct', 'after', 'before']);
-        }
-
-        return Phaser.Utils.Array.GetRandom<PromptMode>(['direct', 'after', 'before', 'between']);
+        this.renderLine(difficultyLevel > 1);
     }
 
-    renderLine ()
+    buildSingleHopPrompt ()
+    {
+        const direction = Phaser.Math.Between(0, 1) === 0 ? -1 : 1;
+        const hopSize = Phaser.Math.Between(1, 3);
+        const minStart = direction === -1 ? hopSize : 0;
+        const maxStart = direction === 1 ? this.maxValue - hopSize : this.maxValue;
+        const startValue = Phaser.Math.Between(minStart, maxStart);
+        const targetValue = startValue + direction * hopSize;
+
+        return {
+            startValue,
+            targetValue,
+            hops: [direction * hopSize],
+            promptText: `The chicken starts on ${startValue}. Hop ${hopSize} ${direction === 1 ? 'more' : 'less'}.`
+        };
+    }
+
+    buildTwoStepPrompt ()
+    {
+        for (let attempt = 0; attempt < 40; attempt += 1) {
+            const startValue = Phaser.Math.Between(4, this.maxValue - 4);
+            const firstDirection = Phaser.Math.Between(0, 1) === 0 ? -1 : 1;
+            const secondDirection = Phaser.Math.Between(0, 1) === 0 ? -1 : 1;
+            const firstHop = Phaser.Math.Between(2, 5);
+            const secondHop = Phaser.Math.Between(1, 4);
+            const afterFirst = startValue + firstDirection * firstHop;
+            const targetValue = afterFirst + secondDirection * secondHop;
+
+            if (afterFirst < 0 || afterFirst > this.maxValue || targetValue < 0 || targetValue > this.maxValue) {
+                continue;
+            }
+
+            return {
+                startValue,
+                targetValue,
+                hops: [firstDirection * firstHop, secondDirection * secondHop],
+                promptText: `Start on ${startValue}. Hop ${firstHop} ${firstDirection === 1 ? 'right' : 'left'}, then ${secondHop} ${secondDirection === 1 ? 'right' : 'left'}.`
+            };
+        }
+
+        return {
+            startValue: 10,
+            targetValue: 13,
+            hops: [3],
+            promptText: 'Start on 10. Hop 3 right.'
+        };
+    }
+
+    renderLine (showStartMarker: boolean)
     {
         this.clearLine();
         const y = 18;
         const startX = -390;
         const endX = 390;
+        const dotSize = this.maxValue > 10 ? 24 : 30;
+        const panel = this.add.rectangle(0, 28, 860, 224, 0xfff5d6, 0.94)
+            .setStrokeStyle(6, 0x7f5a2d)
+            .setDepth(6);
+        const panelLabel = this.addGameText(0, -62, 'Number Line', {
+            fontFamily: GameScene.FONT_FAMILY,
+            fontSize: 24,
+            color: '#7f4c1c',
+            stroke: '#fff6df',
+            strokeThickness: 6
+        }).setOrigin(0.5).setDepth(7);
         const line = this.add.rectangle(0, y, endX - startX + 6, 8, 0x8f5f2e).setDepth(8);
-        this.lineObjects.push(line);
+        this.lineObjects.push(panel, panelLabel, line);
         this.dots = [];
 
         for (let value = 0; value <= this.maxValue; value++) {
             const x = Phaser.Math.Linear(startX, endX, value / this.maxValue);
             const tick = this.add.rectangle(x, y, 4, 28, 0x8f5f2e).setDepth(10);
-            const dot = this.add.ellipse(x, y, 30, 30, 0xfff7e3)
+            const dot = this.add.ellipse(x, y, dotSize, dotSize, 0xfff7e3)
                 .setStrokeStyle(4, 0x8f5f2e)
                 .setDepth(12)
                 .setInteractive({ cursor: 'pointer' });
+
+            if (showStartMarker && value === this.startValue) {
+                dot.setFillStyle(0xffe7ae);
+            }
+
+            this.lineObjects.push(tick, dot);
+
             const label = this.addGameText(x, y + 44, `${value}`, {
                 fontFamily: GameScene.FONT_FAMILY,
-                fontSize: this.maxValue > 15 ? 18 : 20,
+                fontSize: this.maxValue > 10 ? 16 : 20,
                 color: '#7f4c1c',
                 stroke: '#fff6df',
                 strokeThickness: 6,
                 align: 'center'
             }).setOrigin(0.5).setDepth(12);
             label.disableInteractive();
+            this.lineObjects.push(label);
 
             dot.on('pointerup', () => {
                 this.selectValue(value);
@@ -176,12 +236,12 @@ export class ChickenNumberLineGameScene extends GameScene
                 dot.setScale(1);
             });
 
-            this.lineObjects.push(tick, dot, label);
             this.dots.push({ value, x, dot });
         }
 
-        const startDot = this.dots[0];
+        const startDot = this.dots.find((dot) => dot.value === this.startValue) ?? this.dots[0];
         this.chicken.setPosition(startDot.x, y - 56);
+
     }
 
     selectValue (value: number)
@@ -197,23 +257,14 @@ export class ChickenNumberLineGameScene extends GameScene
             return;
         }
 
-        this.tweens.add({
-            targets: this.chicken,
-            x: selectedDot.x,
-            y: -40,
-            duration: 220,
-            ease: 'Sine.easeOut',
-            onComplete: () => {
-                this.chicken.setY(-38);
-            }
-        });
-
         if (value === this.targetValue) {
             this.sfx.get('correct')?.play();
             this.feedbackText.setText('That is the right spot.');
             selectedDot.dot.setFillStyle(0xdff4b4);
-            this.time.delayedCall(900, () => {
-                this.generateRound();
+            this.animateChickenPath(value === this.targetValue ? this.getHopLandingValues() : [value], () => {
+                this.time.delayedCall(600, () => {
+                    this.generateRound();
+                });
             });
             return;
         }
@@ -222,11 +273,107 @@ export class ChickenNumberLineGameScene extends GameScene
         this.feedbackText.setText('Try again.');
         this.cameras.main.shake(180, 0.002);
         selectedDot.dot.setFillStyle(0xffd9c7);
-        this.time.delayedCall(450, () => {
-            selectedDot.dot.setFillStyle(0xfff7e3);
-            this.feedbackText.setText('');
-            this.inputLocked = false;
+        this.animateChickenPath([value], () => {
+            this.time.delayedCall(450, () => {
+                const startDot = this.dots.find((dot) => dot.value === this.startValue);
+                selectedDot.dot.setFillStyle(selectedDot.value === this.startValue ? 0xffe7ae : 0xfff7e3);
+                this.feedbackText.setText('');
+                if (startDot) {
+                    this.tweens.add({
+                        targets: this.chicken,
+                        x: startDot.x,
+                        y: -38,
+                        duration: 180,
+                        ease: 'Sine.easeOut',
+                        onComplete: () => {
+                            this.inputLocked = false;
+                        }
+                    });
+                    return;
+                }
+                this.inputLocked = false;
+            });
         });
+    }
+
+    getHopLandingValues ()
+    {
+        const values: number[] = [];
+        let currentValue = this.startValue;
+
+        this.hopSteps.forEach((hop) => {
+            const direction = hop > 0 ? 1 : -1;
+
+            for (let step = 0; step < Math.abs(hop); step += 1) {
+                currentValue += direction;
+                values.push(currentValue);
+            }
+        });
+
+        if (values.length === 0) {
+            values.push(this.targetValue);
+        }
+
+        return values;
+    }
+
+    animateChickenPath (values: number[], onComplete: () => void)
+    {
+        let previousValue = this.startValue;
+
+        const runStep = (index: number) => {
+            if (index >= values.length) {
+                onComplete();
+                return;
+            }
+
+            const targetDot = this.dots.find((dot) => dot.value === values[index]);
+            if (!targetDot) {
+                runStep(index + 1);
+                return;
+            }
+
+            const previousDot = this.dots.find((dot) => dot.value === previousValue);
+            const startX = this.chicken.x;
+            const hopUpY = -72;
+            const landingY = -38;
+
+            this.tweens.add({
+                targets: this.chicken,
+                x: (startX + targetDot.x) / 2,
+                y: hopUpY,
+                duration: 180,
+                ease: 'Quad.easeOut',
+                onComplete: () => {
+                    this.tweens.add({
+                        targets: this.chicken,
+                        x: targetDot.x,
+                        y: landingY,
+                        duration: 190,
+                        ease: 'Quad.easeIn',
+                        onComplete: () => {
+                            if (previousDot && previousDot.value !== this.startValue) {
+                                previousDot.dot.setFillStyle(0xfff7e3);
+                            }
+                            targetDot.dot.setFillStyle(0xffe7ae);
+                            previousValue = targetDot.value;
+                            this.tweens.add({
+                                targets: this.chicken,
+                                y: landingY - 2,
+                                duration: 60,
+                                ease: 'Sine.easeOut',
+                                yoyo: true,
+                                onComplete: () => {
+                                    runStep(index + 1);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        };
+
+        runStep(0);
     }
 
     clearLine ()
