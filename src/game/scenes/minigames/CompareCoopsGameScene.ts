@@ -132,8 +132,8 @@ export class CompareCoopsGameScene extends GameScene
     {
         const difficultyLevel = this.getDifficultyLevel();
         const allowSame = difficultyLevel > 1 && Phaser.Math.Between(0, 3) === 0;
-        const maxValue = difficultyLevel === 1 ? 5 : difficultyLevel === 2 ? 10 : 20;
-        const minValue = difficultyLevel === 1 ? 1 : difficultyLevel === 2 ? 2 : 5;
+        const maxValue = difficultyLevel === 1 ? 5 : 10;
+        const minValue = difficultyLevel === 1 ? 1 : difficultyLevel === 2 ? 2 : 3;
 
         this.leftCount = Phaser.Math.Between(minValue, maxValue);
 

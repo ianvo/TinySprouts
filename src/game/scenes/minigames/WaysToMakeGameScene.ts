@@ -88,6 +88,7 @@ export class WaysToMakeGameScene extends GameScene
     generateRound ()
     {
         const difficultyLevel = this.getDifficultyLevel();
+        const isVisualLevel = difficultyLevel === 1;
         this.clearChoices();
         this.clearVisuals();
         this.feedbackText.setText('');
@@ -102,32 +103,39 @@ export class WaysToMakeGameScene extends GameScene
             this.shownRight = temp;
         }
 
-        this.promptText.setText(`Which pair also makes ${this.totalCount}?`);
+        this.promptText.setText(isVisualLevel
+            ? 'Which pair has the same amount of eggs?'
+            : difficultyLevel === 2
+                ? `Which pair also makes ${this.totalCount}?`
+                : 'Which addition problem has the same total?');
         this.renderTopModel();
         this.buildChoices();
     }
 
     renderTopModel ()
     {
-        const slotCount = this.getDifficultyLevel() === 1 ? 5 : 10;
-        this.createBasket(-130, -46, `${this.shownLeft}`, this.shownLeft, slotCount, true);
-        this.createBasket(130, -46, `${this.shownRight}`, this.shownRight, slotCount, true);
+        const difficultyLevel = this.getDifficultyLevel();
+        const container = this.add.container(0, -46).setDepth(30);
+        const card = this.add.rectangle(0, 0, 210, 112, 0xfff7e3)
+            .setStrokeStyle(6, 0x8f5f2e);
+        container.add(card);
 
-        const plus = this.addGameText(0, -46, '+', {
-            fontFamily: GameScene.FONT_FAMILY,
-            fontSize: 56,
-            color: '#ffffff',
-            stroke: '#2d3d24',
-            strokeThickness: 8
-        }).setOrigin(0.5).setDepth(30);
-        const equation = this.addGameText(0, 74, `${this.shownLeft} + ${this.shownRight} = ${this.totalCount}`, {
-            fontFamily: GameScene.FONT_FAMILY,
-            fontSize: 34,
-            color: '#fff7df',
-            stroke: '#2d3d24',
-            strokeThickness: 7
-        }).setOrigin(0.5).setDepth(30);
-        this.visualObjects.push(plus, equation);
+        if (difficultyLevel < 3) {
+            this.addMiniPair(container, this.shownLeft, this.shownRight);
+        }
+        else {
+            const label = this.addGameText(0, 0, `${this.shownLeft} + ${this.shownRight}`, {
+                fontFamily: GameScene.FONT_FAMILY,
+                fontSize: 34,
+                color: '#8b4d1d',
+                stroke: '#fff8e5',
+                strokeThickness: 7,
+                align: 'center'
+            }).setOrigin(0.5);
+            container.add(label);
+        }
+
+        this.visualObjects.push(container);
     }
 
     buildChoices ()
@@ -176,7 +184,8 @@ export class WaysToMakeGameScene extends GameScene
 
     addMiniPair (container: Phaser.GameObjects.Container, left: number, right: number)
     {
-        const slotCount = this.getDifficultyLevel() === 1 ? 5 : 10;
+        const isVisualLevel = this.getDifficultyLevel() === 1;
+        const slotCount = isVisualLevel ? 5 : 10;
         const plus = this.addGameText(0, -4, '+', {
             fontFamily: GameScene.FONT_FAMILY,
             fontSize: 28,
@@ -184,15 +193,20 @@ export class WaysToMakeGameScene extends GameScene
             stroke: '#fff8e5',
             strokeThickness: 6
         }).setOrigin(0.5);
-        const label = this.addGameText(0, 40, `${left} + ${right}`, {
-            fontFamily: GameScene.FONT_FAMILY,
-            fontSize: 22,
-            color: '#8b4d1d',
-            stroke: '#fff8e5',
-            strokeThickness: 6
-        }).setOrigin(0.5);
 
-        container.add([plus, label]);
+        container.add(plus);
+
+        if (!isVisualLevel) {
+            const label = this.addGameText(0, 40, `${left} + ${right}`, {
+                fontFamily: GameScene.FONT_FAMILY,
+                fontSize: 22,
+                color: '#8b4d1d',
+                stroke: '#fff8e5',
+                strokeThickness: 6
+            }).setOrigin(0.5);
+            container.add(label);
+        }
+
         this.addMiniEggs(container, -52, -6, left, slotCount);
         this.addMiniEggs(container, 52, -6, right, slotCount);
     }
@@ -268,21 +282,25 @@ export class WaysToMakeGameScene extends GameScene
         return pairs;
     }
 
-    createBasket (x: number, y: number, label: string, count: number, slotCount: number, showEggs: boolean)
+    createBasket (x: number, y: number, label: string | null, count: number, slotCount: number, showEggs: boolean)
     {
         const width = 178;
         const height = slotCount === 5 ? 96 : 142;
         const panel = this.add.rectangle(x, y, width, height, 0xfff5d6)
             .setStrokeStyle(6, 0x7f5a2d)
             .setDepth(10);
-        const labelText = this.addGameText(x, y - height / 2 - 20, label, {
-            fontFamily: GameScene.FONT_FAMILY,
-            fontSize: 30,
-            color: '#7f4c1c',
-            stroke: '#fff6df',
-            strokeThickness: 6
-        }).setOrigin(0.5).setDepth(20);
-        this.visualObjects.push(panel, labelText);
+        this.visualObjects.push(panel);
+
+        if (label !== null) {
+            const labelText = this.addGameText(x, y - height / 2 - 20, label, {
+                fontFamily: GameScene.FONT_FAMILY,
+                fontSize: 30,
+                color: '#7f4c1c',
+                stroke: '#fff6df',
+                strokeThickness: 6
+            }).setOrigin(0.5).setDepth(20);
+            this.visualObjects.push(labelText);
+        }
 
         if (!showEggs) {
             return;

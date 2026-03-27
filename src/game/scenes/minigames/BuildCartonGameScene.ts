@@ -101,11 +101,11 @@ export class BuildCartonGameScene extends GameScene
         const difficultyLevel = this.getDifficultyLevel();
         if (difficultyLevel === 1) {
             this.tensCount = 1;
-            this.onesCount = Phaser.Math.Between(1, 9);
+            this.onesCount = Phaser.Math.Between(1, 5);
             this.helperText.setText('One full carton is 10 eggs.');
         }
         else if (difficultyLevel === 2) {
-            this.tensCount = Phaser.Math.Between(2, 5);
+            this.tensCount = Phaser.Math.Between(1, 2);
             this.onesCount = Phaser.Math.Between(0, 9);
             this.helperText.setText('Count the full cartons by tens.');
         }
@@ -124,8 +124,13 @@ export class BuildCartonGameScene extends GameScene
     renderVisuals ()
     {
         this.clearVisuals();
+        const difficultyLevel = this.getDifficultyLevel();
+        const showLabeledFullCartons = difficultyLevel === 3;
+        const tensLabelText = difficultyLevel === 2
+            ? `${this.tensCount} full carton${this.tensCount === 1 ? '' : 's'}`
+            : 'Full cartons';
 
-        const tensLabel = this.addGameText(0, -154, 'Full cartons', {
+        const tensLabel = this.addGameText(0, -154, tensLabelText, {
             fontFamily: GameScene.FONT_FAMILY,
             fontSize: 22,
             color: '#7f4c1c',
@@ -134,28 +139,51 @@ export class BuildCartonGameScene extends GameScene
         }).setOrigin(0.5).setDepth(20);
         this.visualObjects.push(tensLabel);
 
-        const columns = 3;
-        const spacingX = 200;
-        const spacingY = 100;
-        const startX = -((columns - 1) * spacingX) / 2;
-        const startY = this.tensCount > 6 ? -74 : this.tensCount > 3 ? -60 : -44;
+        if (showLabeledFullCartons) {
+            const itemCount = this.tensCount + (this.onesCount > 0 ? 1 : 0);
+            const columns = 3;
+            const spacingX = 206;
+            const spacingY = 86;
+            const startX = -((columns - 1) * spacingX) / 2;
+            const rows = Math.ceil(itemCount / columns);
+            const startY = rows >= 4 ? -108 : rows === 3 ? -92 : rows === 2 ? -74 : -60;
 
-        for (let index = 0; index < this.tensCount; index++) {
-            const x = startX + (index % columns) * spacingX;
-            const y = startY + Math.floor(index / columns) * spacingY;
-            this.createCarton(x, y, 10);
+            for (let index = 0; index < itemCount; index++) {
+                const x = startX + (index % columns) * spacingX;
+                const y = startY + Math.floor(index / columns) * spacingY;
+
+                if (index < this.tensCount) {
+                    this.createFullCarton(x, y);
+                }
+                else {
+                    this.createMiniCarton(x, y, this.onesCount);
+                }
+            }
         }
+        else {
+            const columns = 3;
+            const spacingX = 200;
+            const spacingY = 100;
+            const startX = -((columns - 1) * spacingX) / 2;
+            const startY = this.tensCount > 6 ? -74 : this.tensCount > 3 ? -60 : -44;
 
-        const onesY = this.tensCount > 6 ? 138 : 122;
-        const onesLabel = this.addGameText(0, onesY - 76, 'Extra eggs', {
-            fontFamily: GameScene.FONT_FAMILY,
-            fontSize: 22,
-            color: '#7f4c1c',
-            stroke: '#fff6df',
-            strokeThickness: 6
-        }).setOrigin(0.5).setDepth(20);
-        this.visualObjects.push(onesLabel);
-        this.createCarton(0, onesY, this.onesCount);
+            for (let index = 0; index < this.tensCount; index++) {
+                const x = startX + (index % columns) * spacingX;
+                const y = startY + Math.floor(index / columns) * spacingY;
+                this.createCarton(x, y, 10);
+            }
+
+            const onesY = this.tensCount > 6 ? 138 : 122;
+            const onesLabel = this.addGameText(0, onesY - 76, 'Extra eggs', {
+                fontFamily: GameScene.FONT_FAMILY,
+                fontSize: 22,
+                color: '#7f4c1c',
+                stroke: '#fff6df',
+                strokeThickness: 6
+            }).setOrigin(0.5).setDepth(20);
+            this.visualObjects.push(onesLabel);
+            this.createCarton(0, onesY, this.onesCount);
+        }
     }
 
     createCarton (x: number, y: number, filledCount: number)
@@ -185,6 +213,56 @@ export class BuildCartonGameScene extends GameScene
 
             if (index < filledCount) {
                 const egg = this.add.ellipse(slot.x, slot.y, 14, 18, GameScene.EGG_FILL)
+                    .setStrokeStyle(2, 0x8a6230)
+                    .setDepth(14);
+                this.visualObjects.push(egg);
+            }
+        }
+    }
+
+    createFullCarton (x: number, y: number)
+    {
+        const panel = this.add.rectangle(x, y, 152, 72, 0xfff5d6)
+            .setStrokeStyle(6, 0x7f5a2d)
+            .setDepth(10);
+        const label = this.addGameText(x, y, 'Full', {
+            fontFamily: GameScene.FONT_FAMILY,
+            fontSize: 26,
+            color: '#7f4c1c',
+            stroke: '#fff6df',
+            strokeThickness: 6
+        }).setOrigin(0.5).setDepth(20);
+
+        this.visualObjects.push(panel, label);
+    }
+
+    createMiniCarton (x: number, y: number, filledCount: number)
+    {
+        const panel = this.add.rectangle(x, y, 152, 72, 0xfff5d6)
+            .setStrokeStyle(6, 0x7f5a2d)
+            .setDepth(10);
+        this.visualObjects.push(panel);
+
+        const slotWidth = 18;
+        const slotHeight = 16;
+        const gap = 4;
+        const startX = x - 2 * (slotWidth + gap);
+        const startY = y - 12;
+
+        for (let index = 0; index < 10; index++) {
+            const column = index % 5;
+            const row = Math.floor(index / 5);
+            const slot = this.add.rectangle(
+                startX + column * (slotWidth + gap),
+                startY + row * 22,
+                slotWidth,
+                slotHeight,
+                0xfffaee
+            ).setStrokeStyle(2, 0x8f6935).setDepth(12);
+            this.visualObjects.push(slot);
+
+            if (index < filledCount) {
+                const egg = this.add.ellipse(slot.x, slot.y, 12, 15, GameScene.EGG_FILL)
                     .setStrokeStyle(2, 0x8a6230)
                     .setDepth(14);
                 this.visualObjects.push(egg);

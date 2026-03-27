@@ -7,6 +7,12 @@ type ChickenMarker = {
     badge: Phaser.GameObjects.Text;
 };
 
+type ChickenPosition = {
+    x: number;
+    y: number;
+    scale: number;
+};
+
 export class CountingGameScene extends GameScene
 {
     camera!: Phaser.Cameras.Scene2D.Camera;
@@ -217,7 +223,8 @@ export class CountingGameScene extends GameScene
 
     updateFrameLayout () {
         const slotCount = this.getMaxAnswerValue();
-        const useFrame = this.getDifficultyLevel() < 3;
+        const difficultyLevel = this.getDifficultyLevel();
+        const useFrame = difficultyLevel < 3;
         const isFiveFrame = slotCount === 5;
         const baseY = isFiveFrame ? -46 : -26;
         const baseHeight = isFiveFrame ? 132 : 250;
@@ -231,6 +238,15 @@ export class CountingGameScene extends GameScene
         this.frameSlots = [];
 
         this.frameBase.setVisible(useFrame);
+        if (difficultyLevel === 3) {
+            this.frameBase
+                .setVisible(true)
+                .setPosition(0, -18)
+                .setSize(620, 286)
+                .setDisplaySize(620, 286);
+            return;
+        }
+
         if (!useFrame) {
             return;
         }
@@ -261,18 +277,53 @@ export class CountingGameScene extends GameScene
             }));
         }
 
-        return [
-            { x: -275, y: -90, scale: 0.68 },
-            { x: -170, y: -120, scale: 0.62 },
-            { x: -28, y: -46, scale: 0.76 },
-            { x: 92, y: -118, scale: 0.62 },
-            { x: 260, y: -84, scale: 0.7 },
-            { x: -244, y: 64, scale: 0.72 },
-            { x: -78, y: 92, scale: 0.64 },
-            { x: 76, y: 38, scale: 0.78 },
-            { x: 224, y: 106, scale: 0.66 },
-            { x: 8, y: 158, scale: 0.7 }
-        ];
+        return this.generateFreeRangeChickenPositions(this.getMaxAnswerValue());
+    }
+
+    generateFreeRangeChickenPositions (count: number): ChickenPosition[] {
+        const positions: ChickenPosition[] = [];
+        const left = this.frameBase.x - this.frameBase.displayWidth / 2 + 56;
+        const right = this.frameBase.x + this.frameBase.displayWidth / 2 - 56;
+        const top = this.frameBase.y - this.frameBase.displayHeight / 2 + 58;
+        const bottom = this.frameBase.y + this.frameBase.displayHeight / 2 - 40;
+        const minDistance = 86;
+
+        for (let index = 0; index < count; index++) {
+            let placement: ChickenPosition | null = null;
+
+            for (let attempt = 0; attempt < 80; attempt++) {
+                const candidate: ChickenPosition = {
+                    x: Phaser.Math.Between(left, right),
+                    y: Phaser.Math.Between(top, bottom),
+                    scale: Phaser.Math.FloatBetween(0.6, 0.8)
+                };
+
+                const overlapsExisting = positions.some((position) => {
+                    const dx = position.x - candidate.x;
+                    const dy = position.y - candidate.y;
+                    return Math.sqrt(dx * dx + dy * dy) < minDistance;
+                });
+
+                if (!overlapsExisting) {
+                    placement = candidate;
+                    break;
+                }
+            }
+
+            if (!placement) {
+                const fallbackColumn = index % 5;
+                const fallbackRow = Math.floor(index / 5);
+                placement = {
+                    x: Phaser.Math.Linear(left, right, (fallbackColumn + 0.5) / 5),
+                    y: Phaser.Math.Linear(top, bottom, (fallbackRow + 0.5) / 2),
+                    scale: Phaser.Math.FloatBetween(0.6, 0.75)
+                };
+            }
+
+            positions.push(placement);
+        }
+
+        return Phaser.Utils.Array.Shuffle(positions);
     }
 
     markChicken (index: number) {

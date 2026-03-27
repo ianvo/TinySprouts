@@ -245,16 +245,17 @@ export class MakeTenGameScene extends GameScene
             const card = this.add.rectangle(0, 0, 200, 120, 0xfff6d6)
                 .setStrokeStyle(5, 0x966131);
             const showEggs = this.currentLevel < 3;
+            const showNumberLabel = this.currentLevel > 1;
             const badge = this.add.circle(showEggs ? 70 : 0, showEggs ? -36 : 0, showEggs ? 24 : 0, 0xfffcf2)
                 .setStrokeStyle(showEggs ? 4 : 0, 0x966131)
-                .setVisible(showEggs);
+                .setVisible(showEggs && showNumberLabel);
             const label = this.add.text(showEggs ? 70 : 0, showEggs ? -36 : 0, `${value}`, {
                 fontFamily: GameScene.FONT_FAMILY,
                 fontSize: showEggs ? 56 : 84,
                 color: '#8f4f24',
                 stroke: '#fffaf0',
                 strokeThickness: 10
-            }).setOrigin(0.5).setResolution(2).setScale(0.5);
+            }).setOrigin(0.5).setResolution(2).setScale(0.5).setVisible(showNumberLabel || !showEggs);
 
             container.add(hitArea);
             container.add(card);
