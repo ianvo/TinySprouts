@@ -18,10 +18,42 @@ interface IProps
 export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame({ currentActiveScene, difficultyLevel, backgroundKey }, ref)
 {
     const game = useRef<Phaser.Game | null>(null!);
+    const containerRef = useRef<HTMLDivElement | null>(null);
 
     useLayoutEffect(() =>
     {
-        const container = document.getElementById('game-container');
+        const container = containerRef.current;
+        let resizeObserver: ResizeObserver | null = null;
+        let resizeFrame = 0;
+
+        const refreshGameScale = () =>
+        {
+            resizeFrame = 0;
+
+            if (!game.current || !container)
+            {
+                return;
+            }
+
+            const { width, height } = container.getBoundingClientRect();
+
+            if (width === 0 || height === 0)
+            {
+                return;
+            }
+
+            game.current.scale.refresh();
+        };
+
+        const queueScaleRefresh = () =>
+        {
+            if (resizeFrame)
+            {
+                window.cancelAnimationFrame(resizeFrame);
+            }
+
+            resizeFrame = window.requestAnimationFrame(refreshGameScale);
+        };
 
         if (game.current)
         {
@@ -34,8 +66,18 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame
             container.innerHTML = '';
         }
 
-        game.current = StartGame("game-container");
+        game.current = StartGame('game-container');
         game.current.registry.set('difficultyLevel', difficultyLevel);
+        queueScaleRefresh();
+
+        if (container && typeof ResizeObserver !== 'undefined')
+        {
+            resizeObserver = new ResizeObserver(() =>
+            {
+                queueScaleRefresh();
+            });
+            resizeObserver.observe(container);
+        }
 
         if (typeof ref === 'function')
         {
@@ -48,6 +90,16 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame
 
         return () =>
         {
+            if (resizeObserver)
+            {
+                resizeObserver.disconnect();
+            }
+
+            if (resizeFrame)
+            {
+                window.cancelAnimationFrame(resizeFrame);
+            }
+
             if (game.current)
             {
                 game.current.destroy(true);
@@ -102,9 +154,14 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame
 
     return (
         <div
-            id="game-container"
+            id="game-frame"
             style={{ '--game-bg-image': `url(/assets/background/${backgroundKey}.png)` } as React.CSSProperties}
-        ></div>
+        >
+            <div
+                id="game-container"
+                ref={containerRef}
+            ></div>
+        </div>
     );
 
 });

@@ -8,6 +8,10 @@ const difficultyModes = [
     { value: 3, label: 'Level 3' }
 ];
 
+const hiddenActivityKeys = new Set([
+    'BuildShapeGameScene'
+]);
+
 const gameBackgrounds: Record<string, string> = {
     MainMenu: 'farmyard',
     PatternGameScene: 'greenhouse',
@@ -148,6 +152,13 @@ const activityGroups = [
     }
 ];
 
+const visibleActivityGroups = activityGroups
+    .map((group) => ({
+        ...group,
+        activities: group.activities.filter((activity) => !hiddenActivityKeys.has(activity.key))
+    }))
+    .filter((group) => group.activities.length > 0);
+
 function App()
 {
     const [gameTitle, setGameTitle] = useState("");
@@ -186,7 +197,7 @@ function App()
 
     const renderActivityGroups = (isChooser: boolean) => (
         <div className={`activity_groups${isChooser ? ' chooser_groups' : ''}`}>
-            {activityGroups.map((group) => (
+            {visibleActivityGroups.map((group) => (
                 <section key={group.label} className="activity_group">
                     <h3 className="activity_group_title">{group.label}</h3>
                     <div className="activity_group_list">
