@@ -19,6 +19,7 @@ import { SortRuleGameScene } from './scenes/minigames/SortRuleGameScene';
 import { BuildShapeGameScene } from './scenes/minigames/BuildShapeGameScene';
 import { OrderByLengthGameScene } from './scenes/minigames/OrderByLengthGameScene';
 import { PictureGraphGameScene } from './scenes/minigames/PictureGraphGameScene';
+import { BalanceEquationGameScene } from './scenes/minigames/BalanceEquationGameScene';
 
 export const GAME_VERSION = Date.now();
 
@@ -50,6 +51,7 @@ const config: Phaser.Types.Core.GameConfig = {
         ChickenNumberLineGameScene,
         BuildCartonGameScene,
         WaysToMakeGameScene,
+        BalanceEquationGameScene,
         ShapeMatchGameScene,
         BuildShapeGameScene,
         CompareLengthGameScene,

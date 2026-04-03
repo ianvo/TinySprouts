@@ -18,6 +18,7 @@ const gameBackgrounds: Record<string, string> = {
     PatternGameScene: 'greenhouse',
     ShapeMatchGameScene: 'greenhouse',
     BuildShapeGameScene: 'farmyard',
+    BalanceEquationGameScene: 'greenhouse',
     CompareLengthGameScene: 'farmyard',
     OrderByLengthGameScene: 'farmyard',
     SortRuleGameScene: 'greenhouse',
@@ -88,6 +89,11 @@ const activityGroups = [
                 key: 'WaysToMakeGameScene',
                 label: 'Number Combinations',
                 description: 'Find different pairs that make the same total.'
+            },
+            {
+                key: 'BalanceEquationGameScene',
+                label: 'Balance Equations',
+                description: 'Use crop values to make both sides of the scale equal.'
             }
         ]
     },
