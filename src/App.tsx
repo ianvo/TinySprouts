@@ -19,6 +19,7 @@ const gameBackgrounds: Record<string, string> = {
     ShapeMatchGameScene: 'greenhouse',
     BuildShapeGameScene: 'farmyard',
     BalanceEquationGameScene: 'greenhouse',
+    AdvancedBalanceEquationGameScene: 'greenhouse',
     CompareLengthGameScene: 'farmyard',
     OrderByLengthGameScene: 'farmyard',
     SortRuleGameScene: 'greenhouse',
@@ -94,6 +95,11 @@ const activityGroups = [
                 key: 'BalanceEquationGameScene',
                 label: 'Balance Equations',
                 description: 'Use crop values to make both sides of the scale equal.'
+            },
+            {
+                key: 'AdvancedBalanceEquationGameScene',
+                label: 'Advanced Balance Equations',
+                description: 'Balance both sides with two crop values and larger totals.'
             }
         ]
     },

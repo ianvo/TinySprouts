@@ -52,8 +52,8 @@ export class GameScene extends Scene {
     static readonly LEVEL_UP_CELEBRATION_HOLD_MS = 920;
     static readonly LEVEL_UP_CELEBRATION_NAME = '__level_up_celebration__';
     static readonly LEVEL_UP_THRESHOLDS: Record<number, number> = {
-        1: 3,
-        2: 4
+        1: 4,
+        2: 6
     };
     title: string;
     bgm: Map<string, Howl>;
@@ -135,6 +135,7 @@ export class GameScene extends Scene {
         }
 
         difficultyState.currentRoundHadMistake = true;
+        difficultyState.masteryProgress = 0;
         GameScene.writeAdaptiveDifficultyState(this.game, this.scene.key, difficultyState);
     }
 
@@ -154,6 +155,9 @@ export class GameScene extends Scene {
                 promoted = true;
                 celebration = this.getAdaptiveCelebration(difficultyState.currentLevel);
             }
+        }
+        else if (difficultyState.currentRoundHadMistake) {
+            difficultyState.masteryProgress = 0;
         }
 
         difficultyState.currentRoundHadMistake = false;

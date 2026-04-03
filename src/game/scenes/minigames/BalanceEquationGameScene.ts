@@ -76,9 +76,9 @@ export class BalanceEquationGameScene extends GameScene
     activeDraggedCard: BinCard | null;
     activePointerId: number | null;
 
-    constructor ()
+    constructor (sceneKey = 'BalanceEquationGameScene', sceneTitle = 'Balance Equations')
     {
-        super('BalanceEquationGameScene', 'Balance Equations');
+        super(sceneKey, sceneTitle);
         this.binCards = [];
         this.round = null;
         this.leftPlacedCrops = [];
@@ -221,7 +221,7 @@ export class BalanceEquationGameScene extends GameScene
         this.updateBalanceState();
     }
 
-    buildRound ()
+    buildRound (): BalanceRound
     {
         const difficultyLevel = this.getDifficultyLevel();
 
@@ -236,7 +236,7 @@ export class BalanceEquationGameScene extends GameScene
         return this.buildLevelThreeRound();
     }
 
-    buildLevelOneRound ()
+    buildLevelOneRound (): BalanceRound
     {
         const levelPool = this.getLevelCropPool(1);
         const allowedCrop = Phaser.Utils.Array.GetRandom(levelPool);
@@ -261,7 +261,7 @@ export class BalanceEquationGameScene extends GameScene
         } satisfies BalanceRound;
     }
 
-    buildLevelTwoRound ()
+    buildLevelTwoRound (): BalanceRound
     {
         const levelPool = this.getLevelCropPool(1);
         const crop = Phaser.Utils.Array.GetRandom(levelPool);
@@ -293,7 +293,7 @@ export class BalanceEquationGameScene extends GameScene
         } satisfies BalanceRound;
     }
 
-    buildLevelThreeRound ()
+    buildLevelThreeRound (): BalanceRound
     {
         const roundCropPool: CropName[] = ['carrot', 'corn'];
         const solutionCrops = this.findRandomCombination(

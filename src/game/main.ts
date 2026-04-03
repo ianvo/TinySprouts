@@ -20,6 +20,7 @@ import { BuildShapeGameScene } from './scenes/minigames/BuildShapeGameScene';
 import { OrderByLengthGameScene } from './scenes/minigames/OrderByLengthGameScene';
 import { PictureGraphGameScene } from './scenes/minigames/PictureGraphGameScene';
 import { BalanceEquationGameScene } from './scenes/minigames/BalanceEquationGameScene';
+import { AdvancedBalanceEquationGameScene } from './scenes/minigames/AdvancedBalanceEquationGameScene';
 
 export const GAME_VERSION = Date.now();
 
@@ -52,6 +53,7 @@ const config: Phaser.Types.Core.GameConfig = {
         BuildCartonGameScene,
         WaysToMakeGameScene,
         BalanceEquationGameScene,
+        AdvancedBalanceEquationGameScene,
         ShapeMatchGameScene,
         BuildShapeGameScene,
         CompareLengthGameScene,
