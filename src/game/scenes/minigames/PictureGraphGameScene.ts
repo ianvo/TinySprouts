@@ -256,14 +256,17 @@ export class PictureGraphGameScene extends GameScene
     submitCategoryAnswer (label: string)
     {
         if (label === this.correctCategory) {
+            const adaptiveResult = this.completeAdaptiveRound();
+            const nextRoundDelay = this.playAdaptiveCelebration(adaptiveResult, 850);
             this.sfx.get('correct')?.play();
             this.feedbackText.setText('That matches the graph.');
-            this.time.delayedCall(850, () => {
+            this.time.delayedCall(nextRoundDelay, () => {
                 this.generateRound();
             });
             return;
         }
 
+        this.markAdaptiveRoundMistake();
         this.sfx.get('incorrect')?.play();
         this.feedbackText.setText('Try again.');
         this.cameras.main.shake(180, 0.002);
@@ -275,14 +278,17 @@ export class PictureGraphGameScene extends GameScene
     submitNumberAnswer (value: number)
     {
         if (value === this.correctNumber) {
+            const adaptiveResult = this.completeAdaptiveRound();
+            const nextRoundDelay = this.playAdaptiveCelebration(adaptiveResult, 850);
             this.sfx.get('correct')?.play();
             this.feedbackText.setText('That matches the graph.');
-            this.time.delayedCall(850, () => {
+            this.time.delayedCall(nextRoundDelay, () => {
                 this.generateRound();
             });
             return;
         }
 
+        this.markAdaptiveRoundMistake();
         this.sfx.get('incorrect')?.play();
         this.feedbackText.setText('Try again.');
         this.cameras.main.shake(180, 0.002);

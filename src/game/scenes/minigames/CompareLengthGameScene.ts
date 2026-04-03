@@ -133,6 +133,7 @@ export class CompareLengthGameScene extends GameScene
 
     generateRound ()
     {
+        this.buildButtons();
         this.clearRound();
         this.feedbackText.setText('');
 
@@ -224,14 +225,17 @@ export class CompareLengthGameScene extends GameScene
     submitAnswer (choice: LengthChoice)
     {
         if (choice === this.correctChoice) {
+            const adaptiveResult = this.completeAdaptiveRound();
+            const nextRoundDelay = this.playAdaptiveCelebration(adaptiveResult, 850);
             this.sfx.get('correct')?.play();
             this.feedbackText.setText(choice === 'Same' ? 'They are the same length.' : `${choice} is longer.`);
-            this.time.delayedCall(850, () => {
+            this.time.delayedCall(nextRoundDelay, () => {
                 this.generateRound();
             });
             return;
         }
 
+        this.markAdaptiveRoundMistake();
         this.sfx.get('incorrect')?.play();
         this.feedbackText.setText('Try again.');
         this.cameras.main.shake(180, 0.002);

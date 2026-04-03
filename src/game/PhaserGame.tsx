@@ -11,11 +11,10 @@ export interface IRefPhaserGame
 interface IProps
 {
     currentActiveScene?: (scene_instance: Phaser.Scene) => void;
-    difficultyLevel: number;
     backgroundKey: string;
 }
 
-export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame({ currentActiveScene, difficultyLevel, backgroundKey }, ref)
+export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame({ currentActiveScene, backgroundKey }, ref)
 {
     const game = useRef<Phaser.Game | null>(null!);
     const containerRef = useRef<HTMLDivElement | null>(null);
@@ -67,7 +66,6 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame
         }
 
         game.current = StartGame('game-container');
-        game.current.registry.set('difficultyLevel', difficultyLevel);
         queueScaleRefresh();
 
         if (container && typeof ResizeObserver !== 'undefined')
@@ -142,15 +140,6 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame
             EventBus.off('current-scene-ready', handleCurrentSceneReady);
         }
     }, [currentActiveScene, ref, GAME_VERSION]);
-
-    useEffect(() =>
-    {
-        if (game.current)
-        {
-            game.current.registry.set('difficultyLevel', difficultyLevel);
-            EventBus.emit('difficulty-changed', difficultyLevel);
-        }
-    }, [difficultyLevel]);
 
     return (
         <div

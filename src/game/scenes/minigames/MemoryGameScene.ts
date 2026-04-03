@@ -317,7 +317,9 @@ export class MemoryGameScene extends GameScene
             this.selectedTiles = [];
 
             if (this.tiles.every((entry) => entry.matched)) {
-                this.time.delayedCall(650, () => {
+                const adaptiveResult = this.completeAdaptiveRound();
+                const nextRoundDelay = this.playAdaptiveCelebration(adaptiveResult, 650);
+                this.time.delayedCall(nextRoundDelay, () => {
                     this.generateBoard();
                 });
                 return;
@@ -329,6 +331,7 @@ export class MemoryGameScene extends GameScene
             return;
         }
 
+        this.markAdaptiveRoundMistake();
         this.sfx.get('incorrect')?.play();
         this.feedbackText.setText('Try again.');
         this.inputLocked = true;

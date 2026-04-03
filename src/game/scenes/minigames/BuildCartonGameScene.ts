@@ -346,14 +346,17 @@ export class BuildCartonGameScene extends GameScene
     submitAnswer (value: number)
     {
         if (value === this.solution) {
+            const adaptiveResult = this.completeAdaptiveRound();
+            const nextRoundDelay = this.playAdaptiveCelebration(adaptiveResult, 850);
             this.sfx.get('correct')?.play();
             this.feedbackText.setText('That is the right number.');
-            this.time.delayedCall(850, () => {
+            this.time.delayedCall(nextRoundDelay, () => {
                 this.generateRound();
             });
             return;
         }
 
+        this.markAdaptiveRoundMistake();
         this.sfx.get('incorrect')?.play();
         this.feedbackText.setText('Try again.');
         this.cameras.main.shake(180, 0.002);

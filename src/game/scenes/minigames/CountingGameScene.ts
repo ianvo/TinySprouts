@@ -168,20 +168,24 @@ export class CountingGameScene extends GameScene
 
     submitAnswer (proposedAnswer: number) {
         if (proposedAnswer === this.solution) {
+            const adaptiveResult = this.completeAdaptiveRound();
+            const nextRoundDelay = this.playAdaptiveCelebration(adaptiveResult, 900);
             this.sfx.get('correct')?.play();
             this.countText.setText('That\'s right!');
-            this.time.delayedCall(900, () => {
+            this.time.delayedCall(nextRoundDelay, () => {
                 this.generateProblem();
             });
             return;
         }
 
+        this.markAdaptiveRoundMistake();
         this.sfx.get('incorrect')?.play();
         this.countText.setText('Try again.');
         this.cameras.main.shake(200, 0.002);
     }
 
     generateProblem () {
+        this.buildAnswerButtons();
         this.clearChickens();
         this.tappedChickens.clear();
 

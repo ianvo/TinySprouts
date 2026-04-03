@@ -1,4 +1,5 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { EventBus } from './game/EventBus';
 import { IRefPhaserGame, PhaserGame } from './game/PhaserGame';
 import { GameScene } from './game/scenes/GameScene';
 
@@ -175,17 +176,51 @@ function App()
         setActiveSceneKey(scene.scene.key);
         if (scene instanceof GameScene && scene.scene.key !== "MainMenu") {
             setGameTitle(scene.title);
+            setDifficultyLevel(scene.getDifficultyLevel());
         }
         else {
             setGameTitle("");
+            setDifficultyLevel(1);
         }
         
     }
+
+    useEffect(() => {
+        const handleDifficultyLevelUpdated = (payload?: { sceneKey?: string; difficultyLevel?: number }) => {
+            if (!payload || payload.sceneKey !== activeSceneKey || typeof payload.difficultyLevel !== 'number') {
+                return;
+            }
+
+            setDifficultyLevel(payload.difficultyLevel);
+        };
+
+        EventBus.on('difficulty-level-updated', handleDifficultyLevelUpdated);
+
+        return () => {
+            EventBus.off('difficulty-level-updated', handleDifficultyLevelUpdated);
+        };
+    }, [activeSceneKey]);
+
+    const applyManualDifficultyLevel = (level: number) => {
+        if (showingChooser || activeSceneKey === 'MainMenu' || !phaserRef.current?.game) {
+            return;
+        }
+
+        GameScene.seedAdaptiveDifficultyState(phaserRef.current.game, activeSceneKey, level);
+        setDifficultyLevel(level);
+        EventBus.emit('difficulty-level-updated', { sceneKey: activeSceneKey, difficultyLevel: level });
+        EventBus.emit('difficulty-changed', { sceneKey: activeSceneKey, difficultyLevel: level });
+    };
 
     const launchScene = (key: string) => {
 
         if(phaserRef.current)
         {     
+            if (phaserRef.current.game && key !== 'MainMenu') {
+                GameScene.resetAdaptiveDifficultyState(phaserRef.current.game, key, 1);
+                setDifficultyLevel(1);
+            }
+
             const scene = phaserRef.current.scene as GameScene;
             
             if (scene)
@@ -233,8 +268,9 @@ function App()
                                     <button
                                         key={mode.value}
                                         type="button"
-                                        className={`mode_button${difficultyLevel === mode.value ? ' active' : ''}`}
-                                        onClick={() => { setDifficultyLevel(mode.value); }}
+                                        className={`mode_button${!showingChooser && difficultyLevel === mode.value ? ' active' : ''}`}
+                                        onClick={() => { applyManualDifficultyLevel(mode.value); }}
+                                        disabled={showingChooser}
                                     >
                                         {mode.label}
                                     </button>
@@ -254,7 +290,6 @@ function App()
                     <PhaserGame
                         ref={phaserRef}
                         currentActiveScene={currentScene}
-                        difficultyLevel={difficultyLevel}
                         backgroundKey={backgroundKey}
                     />
 

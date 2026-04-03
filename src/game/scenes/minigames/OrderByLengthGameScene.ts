@@ -330,9 +330,11 @@ export class OrderByLengthGameScene extends GameScene
             card.card.disableInteractive();
             card.card.setStrokeStyle(6, 0x6f9b3a);
         });
+        const adaptiveResult = this.completeAdaptiveRound();
+        const nextRoundDelay = this.playAdaptiveCelebration(adaptiveResult, 900);
         this.sfx.get('correct')?.play();
         this.feedbackText.setText('The fences are in order.');
-        this.time.delayedCall(900, () => {
+        this.time.delayedCall(nextRoundDelay, () => {
             this.generateRound();
         });
     }

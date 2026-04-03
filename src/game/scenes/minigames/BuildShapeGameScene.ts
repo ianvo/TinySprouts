@@ -937,6 +937,7 @@ export class BuildShapeGameScene extends GameScene
             || slot.angle !== choice.targetAngle
             || slot.scale !== choice.targetScale
         ) {
+            this.markAdaptiveRoundMistake();
             this.sfx.get('incorrect')?.play();
             this.feedbackText.setText('That piece does not fit.');
             this.cameras.main.shake(180, 0.002);
@@ -967,9 +968,11 @@ export class BuildShapeGameScene extends GameScene
         });
 
         if (this.placementSlots.every((entry) => entry.filled)) {
+            const adaptiveResult = this.completeAdaptiveRound();
+            const nextRoundDelay = this.playAdaptiveCelebration(adaptiveResult, 900);
             this.sfx.get('correct')?.play();
             this.feedbackText.setText(`You built the ${this.target.name}.`);
-            this.time.delayedCall(900, () => {
+            this.time.delayedCall(nextRoundDelay, () => {
                 this.generateRound();
             });
             return;

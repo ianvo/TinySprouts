@@ -329,14 +329,17 @@ export class WaysToMakeGameScene extends GameScene
     submitChoice (left: number, right: number)
     {
         if (left + right === this.totalCount) {
+            const adaptiveResult = this.completeAdaptiveRound();
+            const nextRoundDelay = this.playAdaptiveCelebration(adaptiveResult, 850);
             this.sfx.get('correct')?.play();
             this.feedbackText.setText('That makes the same total.');
-            this.time.delayedCall(850, () => {
+            this.time.delayedCall(nextRoundDelay, () => {
                 this.generateRound();
             });
             return;
         }
 
+        this.markAdaptiveRoundMistake();
         this.sfx.get('incorrect')?.play();
         this.feedbackText.setText('Try again.');
         this.cameras.main.shake(180, 0.002);

@@ -347,6 +347,8 @@ export class MakeTenGameScene extends GameScene
         this.acceptingInput = false;
         choice.hitArea.disableInteractive();
 
+        const adaptiveResult = this.completeAdaptiveRound();
+        const nextRoundDelay = this.playAdaptiveCelebration(adaptiveResult, 1200);
         this.sfx.get('correct')?.play();
 
         this.tweens.add({
@@ -367,13 +369,14 @@ export class MakeTenGameScene extends GameScene
             slot.setFillStyle(0xd6f4a4);
         });
 
-        this.time.delayedCall(1200, () => {
+        this.time.delayedCall(nextRoundDelay, () => {
             this.generateRound();
         });
     }
 
     handleIncorrectChoice (choice: ChoiceCard)
     {
+        this.markAdaptiveRoundMistake();
         this.sfx.get('incorrect')?.play();
         this.feedbackText.setText('Try again.');
         this.cameras.main.shake(120, 0.0015);

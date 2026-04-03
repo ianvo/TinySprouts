@@ -380,6 +380,8 @@ export class ShapeMatchGameScene extends GameScene
     submitAnswer (shape: ShapeKind)
     {
         if (shape === this.targetShape) {
+            const adaptiveResult = this.completeAdaptiveRound();
+            const nextRoundDelay = this.playAdaptiveCelebration(adaptiveResult, 850);
             this.sfx.get('correct')?.play();
             this.feedbackText.setText(
                 this.getDifficultyLevel() === 1
@@ -388,12 +390,13 @@ export class ShapeMatchGameScene extends GameScene
                         ? 'That matches the target shape.'
                         : 'That fits the rule.'
             );
-            this.time.delayedCall(850, () => {
+            this.time.delayedCall(nextRoundDelay, () => {
                 this.generateRound();
             });
             return;
         }
 
+        this.markAdaptiveRoundMistake();
         this.sfx.get('incorrect')?.play();
         this.feedbackText.setText('Try again.');
         this.cameras.main.shake(180, 0.002);

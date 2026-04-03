@@ -130,6 +130,7 @@ export class CompareCoopsGameScene extends GameScene
 
     generateRound ()
     {
+        this.buildAnswerButtons();
         const difficultyLevel = this.getDifficultyLevel();
         const allowSame = difficultyLevel > 1 && Phaser.Math.Between(0, 3) === 0;
         const maxValue = difficultyLevel === 1 ? 5 : 10;
@@ -328,14 +329,17 @@ export class CompareCoopsGameScene extends GameScene
     submitAnswer (choice: CompareChoice)
     {
         if (choice === this.correctChoice) {
+            const adaptiveResult = this.completeAdaptiveRound();
+            const nextRoundDelay = this.playAdaptiveCelebration(adaptiveResult, 800);
             this.sfx.get('correct')?.play();
             this.feedbackText.setText(choice === 'Same' ? 'They match.' : `${choice} has more.`);
-            this.time.delayedCall(800, () => {
+            this.time.delayedCall(nextRoundDelay, () => {
                 this.generateRound();
             });
             return;
         }
 
+        this.markAdaptiveRoundMistake();
         this.sfx.get('incorrect')?.play();
         this.feedbackText.setText('Try again.');
         this.cameras.main.shake(180, 0.002);

@@ -258,17 +258,20 @@ export class ChickenNumberLineGameScene extends GameScene
         }
 
         if (value === this.targetValue) {
+            const adaptiveResult = this.completeAdaptiveRound();
+            const nextRoundDelay = this.playAdaptiveCelebration(adaptiveResult, 600);
             this.sfx.get('correct')?.play();
             this.feedbackText.setText('That is the right spot.');
             selectedDot.dot.setFillStyle(0xdff4b4);
             this.animateChickenPath(value === this.targetValue ? this.getHopLandingValues() : [value], () => {
-                this.time.delayedCall(600, () => {
+                this.time.delayedCall(nextRoundDelay, () => {
                     this.generateRound();
                 });
             });
             return;
         }
 
+        this.markAdaptiveRoundMistake();
         this.sfx.get('incorrect')?.play();
         this.feedbackText.setText('Try again.');
         this.cameras.main.shake(180, 0.002);

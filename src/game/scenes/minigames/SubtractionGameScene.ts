@@ -228,15 +228,18 @@ export class SubtractionGameScene extends GameScene
         if (answer === this.solution) {
             this.answering = false;
             this.proposedAnswer = '';
+            const adaptiveResult = this.completeAdaptiveRound();
+            const nextRoundDelay = this.playAdaptiveCelebration(adaptiveResult, 1200);
             this.sfx.get('correct')?.play();
             this.showSolvedState();
-            this.time.delayedCall(1200, () => {
+            this.time.delayedCall(nextRoundDelay, () => {
                 this.generateProblem();
             });
             return;
         }
 
         this.proposedAnswer = '';
+        this.markAdaptiveRoundMistake();
         this.sfx.get('incorrect')?.play();
         this.feedbackText.setText('Try again.');
         this.cameras.main.shake(200, 0.002);
@@ -280,6 +283,7 @@ export class SubtractionGameScene extends GameScene
     }
 
     generateProblem () {
+        this.rebuildInputMethod();
         const difficultyLevel = this.getDifficultyLevel();
         const maxValue = difficultyLevel === 1 ? 5 : difficultyLevel === 2 ? 10 : 99;
         const minTotal = difficultyLevel === 1 ? 2 : difficultyLevel === 2 ? 4 : 14;

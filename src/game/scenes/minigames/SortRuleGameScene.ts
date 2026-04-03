@@ -429,6 +429,7 @@ export class SortRuleGameScene extends GameScene
     placeItemInBin (item: SortItem, bin: SortBin)
     {
         if (bin.key !== item.binKey) {
+            this.markAdaptiveRoundMistake();
             this.sfx.get('incorrect')?.play();
             this.feedbackText.setText('That bin does not match.');
             this.cameras.main.shake(180, 0.002);
@@ -456,8 +457,10 @@ export class SortRuleGameScene extends GameScene
         });
 
         if (this.items.every((entry) => entry.placed)) {
+            const adaptiveResult = this.completeAdaptiveRound();
+            const nextRoundDelay = this.playAdaptiveCelebration(adaptiveResult, 850);
             this.feedbackText.setText('Everything is sorted.');
-            this.time.delayedCall(850, () => {
+            this.time.delayedCall(nextRoundDelay, () => {
                 this.generateRound();
             });
             return;

@@ -258,6 +258,7 @@ export class PatternGameScene extends GameScene
     }
 
     generateProblem () {
+        this.rebuildInputMethod();
         this.proposedAnswer = '';
         this.answering = true;
         this.feedbackText.setText('');
@@ -530,16 +531,19 @@ export class PatternGameScene extends GameScene
 
         if (answer === this.visualSolution) {
             this.answering = false;
+            const adaptiveResult = this.completeAdaptiveRound();
+            const nextRoundDelay = this.playAdaptiveCelebration(adaptiveResult, 1200);
             this.sfx.get('correct')?.play();
             this.promptText.setText('That fits the pattern!');
             this.feedbackText.setText('Nice job.');
             this.revealVisualSolution();
-            this.time.delayedCall(1200, () => {
+            this.time.delayedCall(nextRoundDelay, () => {
                 this.generateProblem();
             });
             return;
         }
 
+        this.markAdaptiveRoundMistake();
         this.sfx.get('incorrect')?.play();
         this.feedbackText.setText('Try again.');
         this.cameras.main.shake(200, 0.002);
@@ -557,16 +561,19 @@ export class PatternGameScene extends GameScene
         if (answer === this.solution) {
             this.answering = false;
             this.proposedAnswer = '';
+            const adaptiveResult = this.completeAdaptiveRound();
+            const nextRoundDelay = this.playAdaptiveCelebration(adaptiveResult, 1200);
             this.sfx.get('correct')?.play();
             this.promptText.setText(`${this.problem}   ${this.solution}`);
             this.feedbackText.setText('That\'s right!');
-            this.time.delayedCall(1200, () => {
+            this.time.delayedCall(nextRoundDelay, () => {
                 this.generateProblem();
             });
             return;
         }
 
         this.proposedAnswer = '';
+        this.markAdaptiveRoundMistake();
         this.sfx.get('incorrect')?.play();
         this.feedbackText.setText('Try again.');
         this.cameras.main.shake(200, 0.002);
